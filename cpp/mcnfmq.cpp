@@ -17,4 +17,7 @@ void from_json(const json& j, Mcnfmq& instance) {
     j.at("source").get_to(instance.source);
     j.at("sink").get_to(instance.sink);
     j.at("flow_value").get_to(instance.flow_value);
+    j.at("costs").get_to(instance.costs);
+    j.at("capacities").get_to(instance.capacities);
+    j.at("minimum_quantities").get_to(instance.minimum_quantities);
 }

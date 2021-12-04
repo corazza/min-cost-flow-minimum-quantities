@@ -3,7 +3,11 @@
 #include <iostream>
 
 Mcnfmq generate_uniform_instance(ParametersUniform p) {
-    Mcnfmq instance(p.n_nodes, 0, 1, p.flow_value);
+    Mcnfmq instance;
+    instance.n_nodes = p.n_nodes;
+    instance.source = 0;
+    instance.sink = 1;
+    instance.flow_value = p.flow_value;
     int max_edges = p.n_nodes * (p.n_nodes - 1);
     int n_edges = (std::rand() % max_edges) + 1;
     for (int i = 0; i < n_edges; ++i) {

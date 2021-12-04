@@ -7,19 +7,17 @@
 #ifndef MCNFMQ_H
 #define MCNFMQ_H
 
-#include <stdint.h>
-
 #include <unordered_map>
 
 #include "json.hpp"
 using json = nlohmann::json;
 
 // needed because C++ doesn't have default implementations for pair<int, int> keys in a hashmap ...
-typedef uint32_t vertex_key;
-typedef uint64_t edge_key;
+typedef std::uint32_t vertex_key;
+typedef std::uint64_t edge_key;
 // ... so this hack is the best solution (https://stackoverflow.com/a/39690912/924313)
 inline edge_key get_edge_key(vertex_key v1, vertex_key v2) {
-    return (size_t)v1 << 32 | (unsigned int)v2;  // edge 64b = (v1 32b, v2 32b)
+    return (std::uint64_t)v1 << 32 | (std::uint64_t)v2;  // edge 64b = (v1 32b, v2 32b)
 }
 
 struct Mcnfmq {
@@ -27,12 +25,17 @@ struct Mcnfmq {
     vertex_key source;
     vertex_key sink;
     unsigned int flow_value;  // _desired_ flow value
+
     std::unordered_map<edge_key, int> costs;
     std::unordered_map<edge_key, int> capacities;
     std::unordered_map<edge_key, int> minimum_quantities;
 
+    Mcnfmq() {}
     Mcnfmq(unsigned int n_nodes, vertex_key source, vertex_key sink, unsigned int flow_value)
         : n_nodes(n_nodes), source(source), sink(sink), flow_value(flow_value) {}
+
+    // NLOHMANN_DEFINE_TYPE_INTRUSIVE(Mcnfmq, n_nodes, source, sink, costs, capacities,
+    //    minimum_quantities)
 };
 
 void to_json(json& j, const Mcnfmq& instance);
