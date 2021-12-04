@@ -7,24 +7,26 @@
 using json = nlohmann::json;
 
 #include "generator.hpp"
-#include "mcnfmq.hpp"
+#include "network.hpp"
 
 int main() {
     std::srand(time(NULL));
-    ParametersUniform p(15, 30, 15, 15);
-    Mcnfmq instance = generate_uniform_instance(p);
+    Parameters p(100, 30, 15, 15);
+    Network network = generate_instance(p);
+    std::cout << "generated random network" << std::endl;
 
-    json j = instance;
+    json j = network;
     std::ofstream o("output.json");
     o << std::setw(4) << j << std::endl;
     o.close();
+    std::cout << "serialized network to output.json" << std::endl;
 
     std::ifstream i("output.json");
     json j2;
     i >> j2;
     i.close();
 
-    Mcnfmq instance2 = j2.get<Mcnfmq>();
-
+    Network instance2 = j2.get<Network>();
+    std::cout << "deserialized network from output.json" << std::endl;
     return 0;
 }

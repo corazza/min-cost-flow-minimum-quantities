@@ -1,33 +1,34 @@
-/* Our problem instance generator
+/* Our problem network generator
  */
 
 #ifndef GENERATOR_H
 #define GENERATOR_H
 
-#include "mcnfmq.hpp"
+#include "network.hpp"
 
 // TODO look at those three parameters other generators use, make non-uniform generator based on
 // them
 
-struct ParametersUniform {
+struct Parameters {
     unsigned int n_nodes;
     unsigned int flow_value;
     unsigned int cost_max;      // edge cost is in [0, cost_max]
     unsigned int capacity_max;  // variable lower bound (minimum qunatity) is in [0, capacity_max]
                                 // upper bound (capacity) is in [1, capacity_max]
 
-    ParametersUniform(unsigned int n_nodes, unsigned int flow_value, unsigned int cost_max,
-                      unsigned int capacity_max)
+    Parameters(unsigned int n_nodes, unsigned int flow_value, unsigned int cost_max,
+               unsigned int capacity_max)
         : n_nodes(n_nodes),
           flow_value(flow_value),
           cost_max(cost_max),
           capacity_max(capacity_max) {}
 };
 
-// - chooses uniformly from the set of all digraphs over p.n_nodes vertices
-// - assigns each edge a random cost, minimum quantity, and capacity (uniformly as defined by p)
-// - therefore the returned instance might not have a solution (e.g. source and sink might be
-//   disconnected)
-Mcnfmq generate_uniform_instance(ParametersUniform p);
+std::pair<vertex_key, vertex_key> add_random_edge(Network* network, Parameters p);
+
+// Builds Network of p.n_nodes nodes
+// - edges are created at random, but a source->sink path is ensured, etc.
+// - assigns each edge a random cost, capacity, and minimum quantity (as defined by p)
+Network generate_instance(Parameters p);
 
 #endif

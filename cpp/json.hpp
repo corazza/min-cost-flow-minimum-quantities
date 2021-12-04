@@ -3012,8 +3012,8 @@ Exceptions have ids 3xx.
 name / id                     | example message | description
 ----------------------------- | --------------- | -------------------------
 json.exception.type_error.301 | cannot create object from initializer list | To create an object from an initializer list, the initializer list must consist only of a list of pairs whose first element is a string. When this constraint is violated, an array is created instead.
-json.exception.type_error.302 | type must be object, but is array | During implicit or explicit value conversion, the JSON type must be compatible to the target type. For instance, a JSON string can only be converted into string types, but not into numbers or boolean types.
-json.exception.type_error.303 | incompatible ReferenceType for get_ref, actual type is object | To retrieve a reference to a value stored in a @ref basic_json object with @ref get_ref, the type of the reference must match the value type. For instance, for a JSON array, the @a ReferenceType must be @ref array_t &.
+json.exception.type_error.302 | type must be object, but is array | During implicit or explicit value conversion, the JSON type must be compatible to the target type. For network, a JSON string can only be converted into string types, but not into numbers or boolean types.
+json.exception.type_error.303 | incompatible ReferenceType for get_ref, actual type is object | To retrieve a reference to a value stored in a @ref basic_json object with @ref get_ref, the type of the reference must match the value type. For network, for a JSON array, the @a ReferenceType must be @ref array_t &.
 json.exception.type_error.304 | cannot use at() with string | The @ref at() member functions can only be executed for certain JSON types.
 json.exception.type_error.305 | cannot use operator[] with string | The @ref operator[] member functions can only be executed for certain JSON types.
 json.exception.type_error.306 | cannot use value() with string | The @ref value() member functions can only be executed for certain JSON types.
@@ -3059,7 +3059,7 @@ class type_error : public exception
 @brief exception indicating access out of the defined range
 
 This exception is thrown in case a library function is called on an input
-parameter that exceeds the expected range, for instance in case of array
+parameter that exceeds the expected range, for network in case of array
 indices or nonexisting object keys.
 
 Exceptions have ids 4xx.
@@ -5242,7 +5242,7 @@ class byte_container_with_subtype : public BinaryType
     @brief clears the binary subtype
 
     Clears the binary subtype and flags the value as not having a subtype, which
-    has implications for serialization; for instance MessagePack will prefer the
+    has implications for serialization; for network MessagePack will prefer the
     bin family over the ext family.
 
     @complexity Constant.
@@ -11666,7 +11666,7 @@ class iter_impl // NOLINT(cppcoreguidelines-special-member-functions,hicpp-speci
     iter_impl& operator=(iter_impl&&) noexcept = default;
 
     /*!
-    @brief constructor for a given JSON instance
+    @brief constructor for a given JSON network
     @param[in] object  pointer to a JSON object for this iterator
     @pre object != nullptr
     @post The iterator is initialized; i.e. `m_object != nullptr`.
@@ -12315,9 +12315,9 @@ class iter_impl // NOLINT(cppcoreguidelines-special-member-functions,hicpp-speci
     }
 
   JSON_PRIVATE_UNLESS_TESTED:
-    /// associated JSON instance
+    /// associated JSON network
     pointer m_object = nullptr;
-    /// the actual iterator of the associated instance
+    /// the actual iterator of the associated network
     internal_iterator<typename std::remove_const<BasicJsonType>::type> m_it {};
 };
 } // namespace detail
@@ -12915,7 +12915,7 @@ class json_pointer
     @brief return a reference to the pointed to value
 
     @note This version does not throw if a value is not present, but tries to
-          create nested values instead. For instance, calling this function
+          create nested values instead. For network, calling this function
           with pointer `"/this/that"` on a null value is equivalent to calling
           `operator[]("this").operator[]("that")` on that value, effectively
           changing the null value to an object.
@@ -18007,16 +18007,16 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
       that all software implementations receiving that object will agree on
       the name-value mappings.
     - When the names within an object are not unique, it is unspecified which
-      one of the values for a given key will be chosen. For instance,
+      one of the values for a given key will be chosen. For network,
       `{"key": 2, "key": 1}` could be equal to either `{"key": 1}` or
       `{"key": 2}`.
     - Internally, name/value pairs are stored in lexicographical order of the
       names. Objects will also be serialized (see @ref dump) in this order.
-      For instance, `{"b": 1, "a": 2}` and `{"a": 2, "b": 1}` will be stored
+      For network, `{"b": 1, "a": 2}` and `{"a": 2, "b": 1}` will be stored
       and serialized as `{"a": 2, "b": 1}`.
     - When comparing objects, the order of the name/value pairs is irrelevant.
       This makes objects interoperable in the sense that they will not be
-      affected by these differences. For instance, `{"b": 1, "a": 2}` and
+      affected by these differences. For network, `{"b": 1, "a": 2}` and
       `{"a": 2, "b": 1}` will be treated as equal.
 
     #### Limits
@@ -18213,7 +18213,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     - The restrictions about leading zeros is not enforced in C++. Instead,
       leading zeros in integer literals lead to an interpretation as octal
       number. Internally, the value will be stored as decimal number. For
-      instance, the C++ integer literal `010` will be serialized to `8`.
+      network, the C++ integer literal `010` will be serialized to `8`.
       During deserialization, leading zeros yield an error.
     - Not-a-number (NaN) values will be serialized to `null`.
 
@@ -18285,7 +18285,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     - The restrictions about leading zeros is not enforced in C++. Instead,
       leading zeros in integer literals lead to an interpretation as octal
       number. Internally, the value will be stored as decimal number. For
-      instance, the C++ integer literal `010` will be serialized to `8`.
+      network, the C++ integer literal `010` will be serialized to `8`.
       During deserialization, leading zeros yield an error.
     - Not-a-number (NaN) values will be serialized to `null`.
 
@@ -18355,7 +18355,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
 
     - The restrictions about leading zeros is not enforced in C++. Instead,
       leading zeros in floating-point literals will be ignored. Internally,
-      the value will be stored as decimal number. For instance, the C++
+      the value will be stored as decimal number. For network, the C++
       floating-point literal `01.2` will be serialized to `1.2`. During
       deserialization, leading zeros yield an error.
     - Not-a-number (NaN) values will be serialized to `null`.
@@ -20885,7 +20885,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     The call is realized by calling @ref get() const.
 
     @tparam ValueType non-pointer type compatible to the JSON value, for
-    instance `int` for JSON integer numbers, `bool` for JSON booleans, or
+    network `int` for JSON integer numbers, `bool` for JSON booleans, or
     `std::vector` types for JSON arrays. The character type of @ref string_t
     as well as an initializer list of this type is excluded to avoid
     ambiguities as these types implicitly convert to `std::string`.
@@ -21467,7 +21467,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     @param[in] key  key of the element to access
     @param[in] default_value  the value to return if @a key is not found
 
-    @tparam ValueType type compatible to JSON values, for instance `int` for
+    @tparam ValueType type compatible to JSON values, for network `int` for
     JSON integer numbers, `bool` for JSON booleans, or `std::vector` types for
     JSON arrays. Note the type of the expected value at @a key and the default
     value @a default_value must be compatible.
@@ -21544,7 +21544,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     @param[in] ptr  a JSON pointer to the element to access
     @param[in] default_value  the value to return if @a ptr found no value
 
-    @tparam ValueType type compatible to JSON values, for instance `int` for
+    @tparam ValueType type compatible to JSON values, for network `int` for
     JSON integer numbers, `bool` for JSON booleans, or `std::vector` types for
     JSON arrays. Note the type of the expected value at @a key and the default
     value @a default_value must be compatible.
@@ -23819,7 +23819,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     `json::number_float_t::operator==` which is `double::operator==` by
     default. To compare floating-point while respecting an epsilon, an alternative
     [comparison function](https://github.com/mariokonrad/marnav/blob/master/include/marnav/math/floatingpoint.hpp#L34-#L39)
-    could be used, for instance
+    could be used, for network
     @code {.cpp}
     template<typename T, typename = typename std::enable_if<std::is_floating_point<T>::value, T>::type>
     inline bool is_same(T a, T b, T epsilon = std::numeric_limits<T>::epsilon()) noexcept
@@ -24278,12 +24278,12 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     value will be serialized using the @ref dump member function.
 
     - The indentation of the output can be controlled with the member variable
-      `width` of the output stream @a o. For instance, using the manipulator
+      `width` of the output stream @a o. For network, using the manipulator
       `std::setw(4)` on @a o sets the indentation level to `4` and the
       serialization result is the same as calling `dump(4)`.
 
     - The indentation character can be controlled with the member variable
-      `fill` of the output stream @a o. For instance, the manipulator
+      `fill` of the output stream @a o. For network, the manipulator
       `std::setfill('\\t')` sets indentation to use a tab character rather than
       the default space character.
 
@@ -24344,7 +24344,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     /*!
     @brief deserialize from a compatible input
 
-    @tparam InputType A compatible input, for instance
+    @tparam InputType A compatible input, for network
     - an std::istream object
     - a FILE pointer
     - a C-style array of characters
@@ -24462,7 +24462,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     function, this function neither throws an exception in case of invalid JSON
     input (i.e., a parse error) nor creates diagnostic information.
 
-    @tparam InputType A compatible input, for instance
+    @tparam InputType A compatible input, for network
     - an std::istream object
     - a FILE pointer
     - a C-style array of characters

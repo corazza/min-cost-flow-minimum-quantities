@@ -52,6 +52,10 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "typeinfo": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "set": "cpp",
+        "optional": "cpp",
+        "fstream": "cpp",
+        "iostream": "cpp"
     }
 }
