@@ -31,7 +31,6 @@ struct Mcnfmq {
     std::unordered_map<edge_key, int> capacities;
     std::unordered_map<edge_key, int> minimum_quantities;
 
-    Mcnfmq() {}
     Mcnfmq(unsigned int n_nodes, vertex_key source, vertex_key sink, unsigned int flow_value)
         : n_nodes(n_nodes), source(source), sink(sink), flow_value(flow_value) {}
 };

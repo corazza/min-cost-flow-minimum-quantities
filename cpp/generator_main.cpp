@@ -1,6 +1,3 @@
-// #include <stdlib.h>
-// #include <time.h>
-
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
@@ -10,11 +7,11 @@
 #include "mcnfmq.hpp"
 
 int main() {
-    // std::srand(time(NULL));
-    ParametersUniform p;
+    std::srand(time(NULL));
+    ParametersUniform p(15, 30, 15, 15);
     Mcnfmq instance = generate_uniform_instance(p);
-    // json j = instance;
-    // std::ofstream o("output.json");
-    // o << std::setw(4) << j << std::endl;
+    json j = instance;
+    std::ofstream o("output.json");
+    o << std::setw(4) << j << std::endl;
     return 0;
 }

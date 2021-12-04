@@ -15,6 +15,13 @@ struct ParametersUniform {
     unsigned int cost_max;      // edge cost is in [0, cost_max]
     unsigned int capacity_max;  // variable lower bound (minimum qunatity) is in [0, capacity_max]
                                 // upper bound (capacity) is in [1, capacity_max]
+
+    ParametersUniform(unsigned int n_nodes, unsigned int flow_value, unsigned int cost_max,
+                      unsigned int capacity_max)
+        : n_nodes(n_nodes),
+          flow_value(flow_value),
+          cost_max(cost_max),
+          capacity_max(capacity_max) {}
 };
 
 // - chooses uniformly from the set of all digraphs over p.n_nodes vertices
