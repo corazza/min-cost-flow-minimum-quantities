@@ -1,18 +1,16 @@
-# metaheuristike
-
-Min Cost Network Flow with Minimum Quantities (MCNFMQ)
+# Min Cost Network Flow with Minimum Quantities
 
 **Problem instance:**
 - directed graph `G = (V, E)`
 - a source `s ∈ V`, a sink `t ∈ V`
 - flow value `F ∈ N`
-- arc costs `c : R → N_0`
-- arc capacities `u : R → N` (upper bound)
-- minimum quantities `λ : R → N0` (variable lower bound)
+- arc costs `c : E → N_0`
+- arc capacities `u : E → N` (upper bound)
+- minimum quantities `λ : E → N_0` (variable lower bound)
 
 **Task:**
-Find a feasible `f : R → N_0` of flow value `F` in `G`
-such that the flow cost `SUM[r ∈ R] f(r) * c(r)` is minimized.
+Find a feasible `f : E → N_0` of flow value `F` in `G`
+such that the flow cost `SUM[e ∈ E] f(e) * c(e)` is minimized.
 
 ## C++ code usage
 
