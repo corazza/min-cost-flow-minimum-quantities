@@ -4,8 +4,8 @@
  * - representation of flows
  */
 
-#ifndef MCNFMQ_H
-#define MCNFMQ_H
+#ifndef NETWORK_H
+#define NETWORK_H
 
 #include <set>
 #include <unordered_map>
@@ -17,14 +17,8 @@ using json = nlohmann::json;
 typedef std::uint32_t vertex_key;
 typedef std::uint64_t edge_key;
 // ... so this hack is the best solution (https://stackoverflow.com/a/39690912/924313)
-inline edge_key get_edge_key(vertex_key v_from, vertex_key v_to) {
-    return (std::uint64_t)v_from << 32 | (std::uint64_t)v_to;  // edge 64b = (v1 32b, v2 32b)
-}
-inline std::pair<vertex_key, vertex_key> get_vertex_keys(edge_key edge) {
-    std::uint32_t v_from = (std::uint32_t)(edge >> 32);
-    std::uint32_t v_to = (std::uint32_t)(edge & (((std::uint64_t)1 << 32) - 1));
-    return std::make_pair((vertex_key)v_from, (vertex_key)v_to);
-}
+inline edge_key get_edge_key(vertex_key v_from, vertex_key v_to);
+inline std::pair<vertex_key, vertex_key> get_vertex_keys(edge_key edge);
 
 struct Network {
     unsigned int n_nodes;
@@ -49,6 +43,7 @@ struct Network {
         : n_nodes(n_nodes), source(0), sink(1), flow_value(flow_value) {}
 };
 
+// ignore (utility for json serialization)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Network, n_nodes, source, sink, flow_value, costs, capacities,
                                    minimum_quantities, outgoing, incoming);
 
@@ -60,5 +55,7 @@ typedef std::unordered_map<edge_key, int> Flow;
 //  - f doesn't respect variable lower bounds or upper bounds (capacities)
 // returns the sum of inputs to the sink node otherwise
 int flow_value(Flow& f, Network& network);
+
+int flow_cost(Flow& f, Network& network);
 
 #endif
