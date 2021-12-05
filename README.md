@@ -21,7 +21,7 @@ Everything important for implementing the C++ parts of the algorithm is defined 
 - `int flow_value(Flow& f, Network& network)` computes total flow of `f` in `network` (unimplemented)
 - `int flow_cost(Flow& f, Network& network)` computes cost of `f` in `network` (unimplemented)
 
-`Network` objects can be imported from or exported into text files, see `cpp/exported_network_example.json`.
+`Network` objects can be imported from or exported into text files, see `data/exported_network_example.json`.
 Doing that provides a language/tool-agnostic way of defining data sets (JSON is easy to import into Python etc.)
 
 ## Generator status
