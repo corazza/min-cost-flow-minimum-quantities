@@ -7,6 +7,7 @@
 - arc costs `c : E → N_0`
 - arc capacities `u : E → N` (upper bound)
 - minimum quantities `λ : E → N_0` (variable lower bound)
+- optionally (?) variable lower bounds `vlb : E -> bool`
 
 **Task:**
 Find a feasible `f : E → N_0` of flow value `F` in `G`
