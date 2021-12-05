@@ -42,6 +42,9 @@ Utility functions:
 
 ## Generator status
 
+- TODO: implement the generator as described in paper (1)
+    - this will be the `Network generate_instance_paper_one(ParametersOne p)` function
+
 Input to the generator is at the moment (as fields of `Parameters` defined in `cpp/generator.hpp`):
 - `n_nodes`: number of nodes the generated network will have (current generator doesn't utilize them all, working on a new one)
 - `flow_value`: as before

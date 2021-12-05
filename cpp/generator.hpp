@@ -24,6 +24,21 @@ struct Parameters {
           capacity_max(capacity_max) {}
 };
 
+struct ParametersOne {
+    unsigned int n_nodes;
+    unsigned int flow_value;
+    unsigned int cost_max;      // edge cost is in [0, cost_max]
+    unsigned int capacity_max;  // variable lower bound (minimum qunatity) is in [0, capacity_max]
+                                // upper bound (capacity) is in [1, capacity_max]
+
+    ParametersOne(unsigned int n_nodes, unsigned int flow_value, unsigned int cost_max,
+                  unsigned int capacity_max)
+        : n_nodes(n_nodes),
+          flow_value(flow_value),
+          cost_max(cost_max),
+          capacity_max(capacity_max) {}
+};
+
 std::pair<vertex_key, vertex_key> add_random_edge(Network& network, Parameters p);
 
 // TODO this generator is terrible, but makes valid problem instances
@@ -63,5 +78,8 @@ Network blueprint_to_network(Blueprint blueprint, Parameters p);
 void execute_action(Blueprint& blueprint, vertex_key node, int action);
 // better generator
 Network generate_instance2(Parameters p);
+
+// generator from paper (1)
+Network generate_instance_paper_one(ParametersOne p);
 
 #endif

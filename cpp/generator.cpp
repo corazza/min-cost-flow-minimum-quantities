@@ -26,10 +26,11 @@ std::pair<vertex_key, vertex_key> add_random_edge(Network& network, Parameters p
     int cost = rand() % (p.cost_max + 1);
     int capacity = (rand() % p.capacity_max) + 1;
     int minimum_quantity = rand() % (p.capacity_max + 1);
+    bool vlb = (bool)(rand() % 2);
     if (minimum_quantity > capacity) {
         minimum_quantity = capacity;
     }
-    network.add_edge(v_from, v_to, cost, capacity, minimum_quantity);
+    network.add_edge(v_from, v_to, cost, capacity, minimum_quantity, vlb);
     return std::make_pair(v_from, v_to);
 }
 

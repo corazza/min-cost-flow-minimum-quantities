@@ -30,13 +30,15 @@ struct Network {
     std::unordered_map<vertex_key, std::set<vertex_key> > incoming;
 
     std::unordered_map<edge_key, int> costs;
-    std::unordered_map<edge_key, int> capacities;
-    std::unordered_map<edge_key, int> minimum_quantities;
+    std::unordered_map<edge_key, int> capacities;          // upper bound of edge key
+    std::unordered_map<edge_key, int> minimum_quantities;  // lower bound of edge_key
+    std::unordered_map<edge_key, bool> vlb;  // true iff edge_key has a variable lower bound
 
     bool exists_edge(vertex_key v_from, vertex_key v_to);  // considers direction
     bool exists_path(vertex_key v_from, vertex_key v_to);
 
-    void add_edge(vertex_key v_from, vertex_key v_to, int cost, int capacity, int minimum_quantity);
+    void add_edge(vertex_key v_from, vertex_key v_to, int cost, int capacity, int minimum_quantity,
+                  bool vlb);
     void remove_edge(vertex_key v_from, vertex_key v_to);
 
     Network() {}
@@ -46,7 +48,7 @@ struct Network {
 
 // ignore (utility for json serialization)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Network, n_nodes, source, sink, flow_value, costs, capacities,
-                                   minimum_quantities, outgoing, incoming);
+                                   minimum_quantities, vlb, outgoing, incoming);
 
 typedef std::unordered_map<edge_key, int> Flow;
 

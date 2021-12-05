@@ -6,12 +6,13 @@
 #include <stack>
 
 void Network::add_edge(vertex_key v_from, vertex_key v_to, int cost, int capacity,
-                       int minimum_quantity) {
+                       int minimum_quantity, bool vlb) {
     edge_key edge = get_edge_key((vertex_key)v_from, (vertex_key)v_to);
 
     this->costs[edge] = cost;
     this->capacities[edge] = capacity;
     this->minimum_quantities[edge] = minimum_quantity;
+    this->vlb[edge] = vlb;
 
     this->outgoing[v_from].insert(v_to);
     this->incoming[v_to].insert(v_from);
