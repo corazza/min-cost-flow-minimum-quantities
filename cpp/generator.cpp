@@ -57,3 +57,42 @@ Network generate_instance(Parameters p) {
     }
     return network;
 }
+
+vertex_key Blueprint::add_node() { return this->node_counter++; }
+
+void Blueprint::add_edge(vertex_key v_from, vertex_key v_to) {
+    this->outgoing[v_from].insert(v_to);
+    this->incoming[v_to].insert(v_from);
+}
+
+void Blueprint::remove_edge(vertex_key v_from, vertex_key v_to) {
+    this->outgoing[v_from].erase(v_to);
+    this->incoming[v_to].erase(v_from);
+}
+
+bool Blueprint::exists_edge(vertex_key v_from, vertex_key v_to) {
+    return this->outgoing[v_from].find(v_to) != this->outgoing[v_from].end();
+}
+
+vertex_key Blueprint::random_regular_node() { return 2 + (rand() % (this->node_counter - 2)); }
+
+Network blueprint_to_network(Blueprint blueprint, Parameters p) {
+    assert(!"blueprint_to_network unimplemented!");
+}
+
+void execute_action(Blueprint* blueprint, vertex_key node, int action) {
+    assert(!"execute_action unimplemented!");
+}
+
+Network generate_instance2(Parameters p) {
+    Blueprint blueprint;
+
+    while (blueprint.node_counter < p.n_nodes) {
+        vertex_key mutating = blueprint.random_regular_node();
+        int x = rand() / (RAND_MAX + 1.);
+        int bp_action = x <= 0.5 ? BP_ACTION_PAR : BP_ACTION_SEQ;
+        execute_action(&blueprint, mutating, bp_action);
+    }
+
+    return blueprint_to_network(blueprint, p);
+}
