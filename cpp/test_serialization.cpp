@@ -11,7 +11,7 @@ using json = nlohmann::json;
 
 int main() {
     std::srand(time(NULL));
-    Parameters p(100, 30, 15, 15);
+    Parameters p(10, 30, 15, 15);
     Network network = generate_instance(p);
     std::cout << "generated random network" << std::endl;
 

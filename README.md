@@ -24,7 +24,30 @@ Everything important for implementing the C++ parts of the algorithm is defined 
 `Network` objects can be imported from or exported into text files, see `data/exported_network_example.json`.
 Doing that provides a language/tool-agnostic way of defining data sets (JSON is easy to import into Python etc.)
 
+This is the (current) structure of an instance (`Network` or exported file):
+
+- `n_nodes`: number of nodes in the network
+- `source`: key of the source vertex
+- `sink`: key of the sink vertex
+- `flow_value`: desired flow value
+- `outgoing[vertex_key]`, `incoming[vertex_key]`: for vertex `vertex_key` these are sets of vertices that it's connected to (this is for easier lookups etc.)
+- `costs[edge_key]`, `capacities[edge_key]`, `minimum_quantities[edge_key]`: map edges to integers as in the problem definition
+
+The `Network` struct has additional utility methods:
+
+- `bool exists_path(vertex_key v_from, vertex_key v_to)`: DFS from `v_from` to `v_to`
+- `bool exists_edge(vertex_key v_from, vertex_key v_to)`: just a lookup in one of the above maps
+
 ## Generator status
+
+Input to the generator is at the moment (as fields of `Parameters` defined in `cpp/generator.hpp`):
+- `n_nodes`: number of nodes the generated network will have (current generator doesn't utilize them all, working on a new one)
+- `flow_value`: as before
+- `cost_max`: edge cost is a random whole number from `[0, cost_max]`
+- `capacity_max`:
+    variable lower bound (minimum quantity) is in `[0, capacity_max]`
+    upper bound (capacity) is in `[1, capacity_max]`, but ensuring `lower<=upper`
+
 
 Current generator `Network generate_instance(Parameters p)` works as we discussed, but is otherwise quite bad.
 Should be enough to test the solver.

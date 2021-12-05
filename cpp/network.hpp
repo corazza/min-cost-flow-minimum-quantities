@@ -26,17 +26,18 @@ struct Network {
     vertex_key sink;
     unsigned int flow_value;  // _desired_ flow value
 
+    std::unordered_map<vertex_key, std::set<vertex_key> > outgoing;
+    std::unordered_map<vertex_key, std::set<vertex_key> > incoming;
+
     std::unordered_map<edge_key, int> costs;
     std::unordered_map<edge_key, int> capacities;
     std::unordered_map<edge_key, int> minimum_quantities;
 
-    std::unordered_map<vertex_key, std::set<vertex_key> > outgoing;
-    std::unordered_map<vertex_key, std::set<vertex_key> > incoming;
+    bool exists_edge(vertex_key v_from, vertex_key v_to);  // considers direction
+    bool exists_path(vertex_key v_from, vertex_key v_to);
 
     void add_edge(vertex_key v_from, vertex_key v_to, int cost, int capacity, int minimum_quantity);
     void remove_edge(vertex_key v_from, vertex_key v_to);
-    bool exists_edge(vertex_key v_from, vertex_key v_to);  // considers direction
-    bool exists_path(vertex_key v_from, vertex_key v_to);
 
     Network() {}
     Network(unsigned int n_nodes, unsigned int flow_value)
