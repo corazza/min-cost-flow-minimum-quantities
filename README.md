@@ -12,7 +12,7 @@
 Find a feasible `f : E → N_0` of flow value `F` in `G`
 such that the flow cost `SUM[e ∈ E] f(e) * c(e)` is minimized.
 
-## C++ code usage
+## Usage
 
 Everything important for implementing the C++ parts of the algorithm is defined in `cpp/network.hpp`:
 
@@ -20,6 +20,15 @@ Everything important for implementing the C++ parts of the algorithm is defined 
 - `Flow` typedef (`std::unordered_map<edge_key, int>`) represents a flow over a network
 - `int flow_value(Flow& f, Network& network)` computes total flow of `f` in `network` (unimplemented)
 - `int flow_cost(Flow& f, Network& network)` computes cost of `f` in `network` (unimplemented)
+
+`Network` objects can be imported from or exported into text files, see `cpp/exported_network_example.json`.
+Doing that provides a language/tool-agnostic way of defining data sets (JSON is easy to import into Python etc.)
+
+## Generator status
+
+Current generator `Network generate_instance(Parameters p)` works as we discussed, but is otherwise quite bad.
+Should be enough to test the solver.
+Currently working on a better one.
 
 ## Compiling
 
