@@ -31,12 +31,14 @@ This is the (current) structure of an instance (`Network` or exported file):
 - `sink`: key of the sink vertex
 - `flow_value`: desired flow value
 - `outgoing[vertex_key]`, `incoming[vertex_key]`: for vertex `vertex_key` these are sets of vertices that it's connected to (this is for easier lookups etc.)
-- `costs[edge_key]`, `capacities[edge_key]`, `minimum_quantities[edge_key]`: map edges to integers as in the problem definition
+- `costs[edge_key]`, `capacities[edge_key]`, `minimum_quantities[edge_key]`: map edges to integers as in the problem definition. 
 
-The `Network` struct has additional utility methods:
+Utility functions:
 
-- `bool exists_path(vertex_key v_from, vertex_key v_to)`: DFS from `v_from` to `v_to`
-- `bool exists_edge(vertex_key v_from, vertex_key v_to)`: just a lookup in one of the above maps
+- `edge_key get_edge_key(vertex_key v_from, vertex_key v_to)`: the edge `(v_from, v_to)` sadly needs to be wrapped into an `edge_key` object
+- `std::pair<vertex_key, vertex_key> get_vertex_keys(edge_key edge)`: `pair.first` is `v_from`, `pair.second` is `v_to`
+- `bool Network::exists_path(vertex_key v_from, vertex_key v_to)`: DFS from `v_from` to `v_to`
+- `bool Network::exists_edge(vertex_key v_from, vertex_key v_to)`: just a lookup in one of the above maps
 
 ## Generator status
 
