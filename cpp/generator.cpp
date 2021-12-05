@@ -5,21 +5,21 @@
 #include <set>
 #include <stack>
 
-bool can_create_edge(Network* network, vertex_key v_from, vertex_key v_to) {
-    bool result = v_from != v_to;                                              // are_different
-    result = (v_from != network->sink) && result;                              // not_from_sink
-    result = (v_to != network->source) && result;                              // not_to_source
-    result = !(v_from == network->source && v_to == network->sink) && result;  // not_source_to_sink
+bool can_create_edge(Network& network, vertex_key v_from, vertex_key v_to) {
+    bool result = v_from != v_to;                                            // are_different
+    result = (v_from != network.sink) && result;                             // not_from_sink
+    result = (v_to != network.source) && result;                             // not_to_source
+    result = !(v_from == network.source && v_to == network.sink) && result;  // not_source_to_sink
     return result;
 }
 
-std::pair<vertex_key, vertex_key> add_random_edge(Network* network, Parameters p) {
+std::pair<vertex_key, vertex_key> add_random_edge(Network& network, Parameters p) {
     int v_from;
     int v_to;
     while (true) {
         v_from = rand() % p.n_nodes;
         v_to = rand() % p.n_nodes;
-        if (can_create_edge(network, v_from, v_to) && !network->exists_edge(v_from, v_to)) {
+        if (can_create_edge(network, v_from, v_to) && !network.exists_edge(v_from, v_to)) {
             break;
         }
     }
@@ -29,7 +29,7 @@ std::pair<vertex_key, vertex_key> add_random_edge(Network* network, Parameters p
     if (minimum_quantity > capacity) {
         minimum_quantity = capacity;
     }
-    network->add_edge(v_from, v_to, cost, capacity, minimum_quantity);
+    network.add_edge(v_from, v_to, cost, capacity, minimum_quantity);
     return std::make_pair(v_from, v_to);
 }
 
@@ -38,7 +38,7 @@ Network generate_instance(Parameters p) {
     std::set<vertex_key> reachable_from_source;
     reachable_from_source.insert(network.source);
     while (reachable_from_source.find(network.sink) == reachable_from_source.end()) {
-        auto from_to = add_random_edge(&network, p);
+        auto from_to = add_random_edge(network, p);
         if (reachable_from_source.find(from_to.first) != reachable_from_source.end()) {
             std::set<vertex_key> visited;
             std::stack<vertex_key> to_visit;
@@ -83,7 +83,7 @@ Network blueprint_to_network(Blueprint blueprint, Parameters p) {
     assert(!"blueprint_to_network unimplemented!");
 }
 
-void execute_action(Blueprint* blueprint, vertex_key node, int action) {
+void execute_action(Blueprint& blueprint, vertex_key node, int action) {
     assert(!"execute_action unimplemented!");
 }
 
@@ -94,7 +94,7 @@ Network generate_instance2(Parameters p) {
         vertex_key mutating = blueprint.random_regular_node();
         int x = rand() / (RAND_MAX + 1.);
         int bp_action = x <= 0.5 ? BP_ACTION_PAR : BP_ACTION_SEQ;
-        execute_action(&blueprint, mutating, bp_action);
+        execute_action(blueprint, mutating, bp_action);
     }
 
     return blueprint_to_network(blueprint, p);

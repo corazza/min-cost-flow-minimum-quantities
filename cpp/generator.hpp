@@ -24,7 +24,7 @@ struct Parameters {
           capacity_max(capacity_max) {}
 };
 
-std::pair<vertex_key, vertex_key> add_random_edge(Network* network, Parameters p);
+std::pair<vertex_key, vertex_key> add_random_edge(Network& network, Parameters p);
 
 // TODO this generator is terrible, but makes valid problem instances
 // Builds Network of p.n_nodes nodes
@@ -60,7 +60,7 @@ struct Blueprint {
 #define BP_ACTION_SEQ 2
 
 Network blueprint_to_network(Blueprint blueprint, Parameters p);
-void execute_action(Blueprint* blueprint, vertex_key node, int action);
+void execute_action(Blueprint& blueprint, vertex_key node, int action);
 // better generator
 Network generate_instance2(Parameters p);
 
