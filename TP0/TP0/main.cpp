@@ -10,33 +10,12 @@ int main() {
 
     // primjer
     Network graf(4, 4);
-
-    graf.outgoing.insert(
-        std::pair<vertex_key, std::set<vertex_key>>(0, std::set<vertex_key>({2, 3})));
-    graf.outgoing.insert(
-        std::pair<vertex_key, std::set<vertex_key>>(2, std::set<vertex_key>({1, 3})));
-    graf.outgoing.insert(std::pair<vertex_key, std::set<vertex_key>>(3, std::set<vertex_key>({1})));
-    graf.incoming.insert(std::pair<vertex_key, std::set<vertex_key>>(2, std::set<vertex_key>({0})));
-    graf.incoming.insert(
-        std::pair<vertex_key, std::set<vertex_key>>(3, std::set<vertex_key>({2, 0})));
-    graf.incoming.insert(
-        std::pair<vertex_key, std::set<vertex_key>>(3, std::set<vertex_key>({2, 3})));
-    graf.costs.insert(std::pair<edge_key, int>(get_edge_key(0, 2), 10));
-    graf.costs.insert(std::pair<edge_key, int>(get_edge_key(0, 3), 3));
-    graf.costs.insert(std::pair<edge_key, int>(get_edge_key(2, 1), 10));
-    graf.costs.insert(std::pair<edge_key, int>(get_edge_key(2, 3), 1));
-    graf.costs.insert(std::pair<edge_key, int>(get_edge_key(3, 1), 3));
-    graf.capacities.insert(std::pair<edge_key, int>(get_edge_key(0, 2), 4));
-    graf.capacities.insert(std::pair<edge_key, int>(get_edge_key(0, 3), 5));
-    graf.capacities.insert(std::pair<edge_key, int>(get_edge_key(2, 1), 3));
-    graf.capacities.insert(std::pair<edge_key, int>(get_edge_key(2, 3), 7));
-    graf.capacities.insert(std::pair<edge_key, int>(get_edge_key(3, 1), 4));
-    graf.minimum_quantities.insert(std::pair<edge_key, int>(get_edge_key(0, 2), 2));
-    graf.minimum_quantities.insert(std::pair<edge_key, int>(get_edge_key(0, 3), 1));
-    graf.minimum_quantities.insert(std::pair<edge_key, int>(get_edge_key(2, 1), 2));
-    graf.minimum_quantities.insert(std::pair<edge_key, int>(get_edge_key(2, 3), 1));
-    graf.minimum_quantities.insert(std::pair<edge_key, int>(get_edge_key(3, 1), 1));
-
+    graf.add_edge(0, 2, 10, 4, 2, true);
+    graf.add_edge(0, 3, 3, 5, 1, true);
+    graf.add_edge(2, 1, 10, 3, 2, true);
+    graf.add_edge(2, 3, 1, 7, 1, true);
+    graf.add_edge(3, 1, 3, 4, 1, true);
+ 
     // definicija okruzja za rjesenje
     IloEnv CPLEX_okruzje;
     IloModel CPLEX_model(CPLEX_okruzje);
@@ -59,6 +38,7 @@ int main() {
     int i = 0;
     for (std::unordered_map<edge_key, int>::iterator it = graf.costs.begin();
          it != graf.costs.end(); ++it) {
+
         CPLEX_fja_cilja += it->second * varijabla_x[i];
         ++i;
     }
@@ -76,8 +56,9 @@ int main() {
 
     for (std::unordered_map<edge_key, int>::iterator it = graf.costs.begin();
          it != graf.costs.end(); ++it) {
+
         par_vrhova = get_vertex_keys(it->first);
-        if (par_vrhova.second == 0) CPLEX_ogranicenje += varijabla_x[i];
+        if (par_vrhova.first == 0) CPLEX_ogranicenje += varijabla_x[i];
         ++i;
     }
 
@@ -93,11 +74,15 @@ int main() {
 
         for (std::unordered_map<edge_key, int>::iterator it = graf.costs.begin();
              it != graf.costs.end(); ++it) {
+
             par_vrhova = get_vertex_keys(it->first);
-            if (par_vrhova.second == pivotni_vrh)
+
+            if (par_vrhova.first == pivotni_vrh)
                 CPLEX_ogranicenje += varijabla_x[i];
-            else if (par_vrhova.first == pivotni_vrh)
+
+            else if (par_vrhova.second == pivotni_vrh)
                 CPLEX_ogranicenje -= varijabla_x[i];
+
             ++i;
         }
 
@@ -112,8 +97,9 @@ int main() {
 
     for (std::unordered_map<edge_key, int>::iterator it = graf.costs.begin();
          it != graf.costs.end(); ++it) {
+
         par_vrhova = get_vertex_keys(it->first);
-        if (par_vrhova.first == 1) CPLEX_ogranicenje += varijabla_x[i];
+        if (par_vrhova.second == 1) CPLEX_ogranicenje += varijabla_x[i];
         ++i;
     }
 
@@ -123,29 +109,37 @@ int main() {
     // 5
 
     i = 0;
-
+    std::unordered_map<edge_key, bool>::iterator varijabilnost = graf.vlb.begin();
     for (std::unordered_map<edge_key, int>::iterator it = graf.minimum_quantities.begin();
          it != graf.minimum_quantities.end(); ++it) {
+
         CPLEX_ogranicenje -= CPLEX_ogranicenje;
 
-        CPLEX_ogranicenje += varijabla_x[i] - it->second * varijabla_y[i];
+        if(varijabilnost->second) CPLEX_ogranicenje += varijabla_x[i] - it->second * varijabla_y[i];
+        else CPLEX_ogranicenje += varijabla_x[i] - it->second;
 
         CPLEX_model.add(CPLEX_ogranicenje >= 0);
+
         ++i;
+        ++varijabilnost;
     }
 
     // 6
 
     i = 0;
-
+    varijabilnost = graf.vlb.begin();
     for (std::unordered_map<edge_key, int>::iterator it = graf.capacities.begin();
          it != graf.capacities.end(); ++it) {
+
         CPLEX_ogranicenje -= CPLEX_ogranicenje;
 
-        CPLEX_ogranicenje += varijabla_x[i] - it->second * varijabla_y[i];
+        if (varijabilnost->second) CPLEX_ogranicenje += varijabla_x[i] - it->second * varijabla_y[i];
+        else CPLEX_ogranicenje += varijabla_x[i] - it->second;
 
         CPLEX_model.add(CPLEX_ogranicenje <= 0);
+
         ++i;
+        ++varijabilnost;
     }
 
     // 7 je zadovoljeno modelom
