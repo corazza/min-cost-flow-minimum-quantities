@@ -144,10 +144,12 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="network.cpp" />
+    <ClCompile Include="generator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="json.hpp" />
     <ClInclude Include="network.hpp" />
+    <ClInclude Include="generator.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

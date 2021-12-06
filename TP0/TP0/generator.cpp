@@ -82,6 +82,7 @@ vertex_key Blueprint::random_regular_node() { return 2 + (rand() % (this->node_c
 
 Network blueprint_to_network(Blueprint blueprint, Parameters p) {
     assert(!"blueprint_to_network unimplemented!");
+    return Network();
 }
 
 void execute_action(Blueprint& blueprint, vertex_key node, int action) {

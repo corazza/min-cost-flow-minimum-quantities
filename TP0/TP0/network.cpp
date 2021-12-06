@@ -47,6 +47,6 @@ bool Network::exists_path(vertex_key v_from, vertex_key v_to) {
     return false;
 }
 
-int flow_value(Flow& f, Network& network) { assert(!"flow_value unimplemented!"); }
+int flow_value(Flow& f, Network& network) { assert(!"flow_value unimplemented!"); return 0; }
 
-int flow_cost(Flow& f, Network& network) { assert(!"flow_cost unimplemented!"); }
+int flow_cost(Flow& f, Network& network) { assert(!"flow_cost unimplemented!"); return 0; }
