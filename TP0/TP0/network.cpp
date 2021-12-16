@@ -7,6 +7,7 @@
 
 void Network::add_edge(vertex_key v_from, vertex_key v_to, int cost, int capacity,
                        int minimum_quantity, bool vlb) {
+    assert(v_from != v_to);
     edge_key edge = get_edge_key((vertex_key)v_from, (vertex_key)v_to);
 
     this->costs[edge] = cost;

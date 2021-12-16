@@ -47,9 +47,13 @@ struct Network {
                   bool vlb);
     void remove_edge(vertex_key v_from, vertex_key v_to);
 
+    unsigned int n_edges() {
+        return this->costs.size();
+    }
+
     Network() {}
     Network(unsigned int n_nodes, unsigned int flow_value)
-        : n_nodes(n_nodes), source(0), sink(1), flow_value(flow_value) {}
+        : n_nodes(n_nodes), source(0), sink(n_nodes-1), flow_value(flow_value) {}
 };
 
 // ignore (utility for json serialization)
@@ -57,6 +61,8 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Network, n_nodes, source, sink, flow_value, c
                                    minimum_quantities, vlb, outgoing, incoming);
 
 typedef std::unordered_map<edge_key, int> Flow;
+
+bool respects_flow_conservation(Flow &flow);
 
 // assumes f respects flow conservation (sum inputs = sum outputs on each node, etc.)
 // returns -1 if:
