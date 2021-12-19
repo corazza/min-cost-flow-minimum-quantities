@@ -145,8 +145,10 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="generator.cpp" />
+    <ClCompile Include="cplex.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cplex.hpp" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="network.hpp" />
     <ClInclude Include="generator.hpp" />

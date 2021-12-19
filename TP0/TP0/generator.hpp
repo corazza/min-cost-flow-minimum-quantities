@@ -14,6 +14,7 @@ struct Parameters {
     unsigned int alpha_2; // lower bound = alpha_1 + alpha_2 * Unif(0, 1) if vlb
     unsigned int alpha_3; // capacity = alpha_3 + alpha_4 * Unif(0, 1)
     unsigned int alpha_4; // alpha_3 > alpha_1 + alph_2
+
 };
 
 Network generate_instance(Parameters p);
