@@ -1,4 +1,7 @@
-#include <network.hpp>
+#include "flow.hpp"
+#include "network.hpp"
+
+#define MUTATE_VALUE_PERCENT 0.1
 
 // - do we want to restrict the GA search space to admissible solutions only?
 // - then the fitness function is just -flow_cost(f)
@@ -10,9 +13,9 @@
 
 double fitness(Network &network, Flow &flow);
 
-Flow mutate(Flow &f1);
+Flow mutate(Network &network, const Flow &flow);
 Flow crossover(Flow &f1, Flow &f2);
 
 Flow ga_solver(Network &network, int population_size, float mutation_rate);
 
-
+Flow random_admissible_flow(Network &network);

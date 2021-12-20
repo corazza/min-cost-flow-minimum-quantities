@@ -64,5 +64,9 @@ Currently working on a better one.
 - on Windows with MSYS2 or on Linux:
 
 ```
-g++ -o test_serialization test_serialization.cpp generator.cpp network.cpp --std=c++17 -static-libgcc -static-libstdc++ -Wall
+g++ -o test_serialization test_serialization.cpp generator.cpp network.cpp flow.cpp --std=c++17 -static-libgcc -static-libstdc++ -Wall
+```
+
+```
+g++ -o test_ga_solver test_ga_solver.cpp generator.cpp network.cpp flow.cpp ga_solver.cpp --std=c++17 -static-libgcc -static-libstdc++ -Wall
 ```

@@ -1,0 +1,211 @@
+#include "ga_solver.hpp"
+#include "util.hpp"
+
+#include <set>
+#include <unordered_map>
+#include <queue>
+#include <iostream>
+
+struct ForwardBalancer {
+    std::unordered_map<vertex_key, int> sending;
+    std::unordered_map<vertex_key, int> throughput;
+
+    int get(vertex_key v) {
+        if (this->sending.find(v) == this->sending.end()) {
+            this->sending[v] = 0;
+            return 0;
+        }
+        return this->sending[v];
+    }
+
+    int take(vertex_key v) {
+        int value = this->get(v);
+        this->sending[v] = 0;
+        return value;
+    }
+
+    void add(Network &network, vertex_key v, int value) {
+        if (this->sending.find(v) == this->sending.end()) {
+            this->sending[v] = value;
+            this->throughput[v] = value;
+        } else {
+            this->sending[v] += value;
+            this->throughput[v] += value;
+        }
+
+        assert(throughput[v] <= network.vertex_effective_capacity[v]);
+    }
+
+    ForwardBalancer(Network &network, Flow &flow) {
+        for (auto edge : flow.values) {
+            auto vertices = get_vertex_keys(edge.first);
+            auto v_from = vertices.first;
+            auto v_to = vertices.second;
+            auto value = edge.second;
+            this->sending[v_from] = 0;
+            this->sending[v_to] = 0;
+            
+            if (this->throughput.find(v_to) == this->throughput.end()) {
+                this->throughput[v_to] = value;
+            } else {
+                this->throughput[v_to] += value;
+            }
+        }
+
+        this->throughput[network.source] = 0;
+
+        for (auto v_to : flow.outgoing[network.source]) {
+            auto edge = get_edge_key(network.source, v_to);
+            auto value = flow.values[edge];
+            this->throughput[network.source] += value;
+        }
+    }
+
+    int remaining_capacity(Network &network, vertex_key v) {
+        if (this->throughput.find(v) == this->throughput.end()) {
+            return network.vertex_effective_capacity[v];
+        }
+        return network.vertex_effective_capacity[v] - this->throughput[v];
+    }
+};
+
+void propagate(Network &network, Flow &flow, vertex_key v_from, int send, bool forward) {
+    if (!network.computed_effective_capacities) {
+        network.compute_effective_capacities();
+    }
+
+    ForwardBalancer vertex_values(network, flow);
+
+    std::queue<vertex_key> to_visit;
+
+    to_visit.push(v_from);
+    vertex_values.add(network, v_from, send);
+    bool absorbed = false;
+
+    while (!to_visit.empty()) {
+        auto visiting = to_visit.front();
+        to_visit.pop();
+        if ((visiting == network.sink && forward) || (visiting == network.source && !forward)) {
+            continue;
+        }
+
+        int value = vertex_values.take(visiting);
+        if (value == 0) {
+            continue;
+        }
+
+        std::set<vertex_key> directing_set = forward ? network.outgoing[visiting] : network.incoming[visiting];
+
+        int n_neighbors = directing_set.size();
+        std::vector<vertex_key> neighbors;
+
+        while (value != 0) {
+            int max_capacity = 0;
+            int max_throughput = 0;
+            int max_edge_capacity = 0;
+            int max_edge_value = 0;
+
+            for (auto neighbor : directing_set) {
+                neighbors.push_back(neighbor);
+
+                vertex_key v_from = forward ? visiting : neighbor;
+                vertex_key v_to = forward ? neighbor : visiting;
+
+                int neighbor_capacity = vertex_values.remaining_capacity(network, neighbor);
+                int neighbor_throughput = vertex_values.throughput[neighbor];
+                int edge_capacity = network.capacity(v_from, v_to);
+                int edge_value = flow.current_value(v_from, v_to);
+                if (edge_value > max_edge_value) {
+                    max_edge_value = edge_value;
+                }
+                if (edge_capacity > max_edge_capacity) {
+                    max_edge_capacity = edge_capacity;
+                }
+                if (neighbor_capacity > max_capacity) {
+                    max_capacity = neighbor_capacity;
+                }
+                if (neighbor_throughput > max_throughput) {
+                    max_throughput = neighbor_throughput;
+                }
+            }
+
+            max_throughput = min(max_throughput, max_edge_value);
+            max_capacity = min(max_capacity, max_edge_capacity);
+
+            assert(max_capacity > 0 || max_throughput > 0);
+
+            int take_from_sending;
+            if (value > 0) {
+                take_from_sending = min(value, (rand() % max_capacity) + 1);
+            } else {
+                take_from_sending = max(value, -((rand() % max_throughput) + 1));
+            }
+            assert(take_from_sending != 0);
+            value -= take_from_sending;
+            int look_from = rand() % n_neighbors;
+            int i = look_from;
+            while (true) {
+                auto neighbor = neighbors[i];
+                vertex_key v_from = forward ? visiting : neighbor;
+                vertex_key v_to = forward ? neighbor : visiting;
+                int after_modification = flow.current_value(v_from, v_to) + take_from_sending;
+                bool within_edge_limits = after_modification >= 0 && after_modification <= network.capacity(v_from, v_to);
+
+                if (take_from_sending > 0) {
+                    if (vertex_values.remaining_capacity(network, neighbor) >= take_from_sending && within_edge_limits) {
+                        vertex_values.add(network, neighbor, take_from_sending);
+                        flow.add_to_edge(v_from, v_to, take_from_sending);
+                        to_visit.push(neighbor);
+                        break;
+                    }
+                } else {
+                    if (vertex_values.throughput[neighbor] >= -take_from_sending && within_edge_limits) {
+                        vertex_values.add(network, neighbor, take_from_sending);
+                        flow.add_to_edge(v_from, v_to, take_from_sending);
+                        to_visit.push(neighbor);
+                        break;
+                    }
+                }
+
+                ++i;
+                if (i == n_neighbors) {
+                    i = 0;
+                }
+
+                assert(i != look_from);
+            }
+        }
+    }
+}
+
+Flow random_admissible_flow(Network &network) {
+    Flow flow(network.flow_value);
+    propagate(network, flow, network.source, network.flow_value, true);
+    return flow;
+}
+
+Flow mutate(Network &network, const Flow &original) {
+    int old_value = original.value;
+    Flow flow = original.make_copy(); // TODO assert test
+
+    std::vector<edge_key> edge_keys;
+    for (auto a : flow.values) {
+        edge_keys.push_back(a.first);
+    }
+    int n_edges = edge_keys.size();
+    int removing_i = rand()%n_edges;
+    auto vertices = get_vertex_keys(edge_keys[removing_i]);
+    auto v_from = vertices.first;
+    auto v_to = vertices.second;
+    int removing_value = flow.values[edge_keys[removing_i]];
+    assert(removing_value > 0);
+    propagate(network, flow, v_to, -removing_value, true);
+    propagate(network, flow, v_from, -removing_value, false);
+    flow.remove_edge(v_from, v_to);
+    propagate(network, flow, network.source, removing_value, true);
+
+    int new_value = flow.recompute_value(network);
+    assert(new_value == old_value);
+
+    return flow;
+}

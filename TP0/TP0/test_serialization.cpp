@@ -8,9 +8,11 @@ using json = nlohmann::json;
 
 #include "generator.hpp"
 #include "network.hpp"
+#include "ga_solver.hpp"
 
 int main() {
     std::srand(time(NULL));
+
     Parameters p;
     p.n_nodes = 200;
     p.max_span_q = p.n_nodes / 2;

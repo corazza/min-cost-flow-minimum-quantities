@@ -1,20 +1,13 @@
 #include "generator.hpp"
+#include "util.hpp"
 
 #include <cassert>
 #include <iostream>
 #include <set>
 #include <stack>
 
-int min(int a, int b) {
-    if (a <= b) {
-        return a;
-    } else {
-        return b;
-    }
-}
-
 Network generate_instance(Parameters p) {
-    Network network(p.n_nodes, p.flow_value);
+    Network network(p.n_nodes, p.flow_value, p.max_span_q);
 
     assert(network.source == 0 && network.sink == network.n_nodes - 1);
     assert(p.alpha_3 > p.alpha_1 + p.alpha_2);

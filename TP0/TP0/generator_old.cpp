@@ -35,7 +35,7 @@ std::pair<vertex_key, vertex_key> add_random_edge(Network& network, Parameters p
 }
 
 Network generate_instance(Parameters p) {
-    Network network(p.n_nodes, p.flow_value);
+    Network network(p.n_nodes, p.flow_value, p.max_span_q);
     std::set<vertex_key> reachable_from_source;
     reachable_from_source.insert(network.source);
     while (reachable_from_source.find(network.sink) == reachable_from_source.end()) {
