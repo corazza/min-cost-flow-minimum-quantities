@@ -4,7 +4,7 @@
 #include <chrono>
 int main() {
 
-	Network graf(4, 4);
+	Network graf(4, 4, 2);
 	graf.add_edge(0, 2, 10, 4, 2, true);
 	graf.add_edge(0, 3, 3, 5, 1, true);
 	graf.add_edge(2, 1, 10, 3, 2, true);
