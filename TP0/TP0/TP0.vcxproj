@@ -142,16 +142,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="flow.cpp" />
+    <ClCompile Include="ga_solver.cpp" />
+    <ClCompile Include="generator_old.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="generator.cpp" />
     <ClCompile Include="cplex.cpp" />
+    <ClCompile Include="test_ga_solver.cpp" />
+    <ClCompile Include="test_serialization.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cplex.hpp" />
+    <ClInclude Include="flow.hpp" />
+    <ClInclude Include="ga_solver.hpp" />
+    <ClInclude Include="generator_old.hpp" />
     <ClInclude Include="json.hpp" />
+    <ClInclude Include="keys.hpp" />
     <ClInclude Include="network.hpp" />
     <ClInclude Include="generator.hpp" />
+    <ClInclude Include="util.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -5,6 +5,9 @@
 #include <unordered_map>
 #include <queue>
 #include <iostream>
+#include <stdlib.h>
+#include <vector>
+#include <stack>
 
 struct ForwardBalancer {
     std::unordered_map<vertex_key, int> sending;
@@ -134,57 +137,59 @@ void propagate(Network &network, Flow &flow, vertex_key v_from, int send, bool f
 
             assert(max_capacity > 0 || max_throughput > 0);
 
-            int take_from_sending;
-            if (value > 0) {
-                take_from_sending = min(value, (rand() % max_capacity) + 1);
-            } else {
-                take_from_sending = max(value, -((rand() % max_throughput) + 1));
-            }
-            assert(take_from_sending != 0);
-            value -= take_from_sending;
-            int look_from = rand() % n_neighbors;
-            int i = look_from;
-            while (true) {
-                auto neighbor = neighbors[i];
-                vertex_key v_from = forward ? visiting : neighbor;
-                vertex_key v_to = forward ? neighbor : visiting;
-                int after_modification = flow.current_value(v_from, v_to) + take_from_sending;
-                bool within_edge_limits = after_modification >= 0 && after_modification <= network.capacity(v_from, v_to);
+int take_from_sending;
+if (value > 0) {
+    take_from_sending = min(value, (rand() % max_capacity) + 1);
+}
+else {
+    take_from_sending = max(value, -((rand() % max_throughput) + 1));
+}
+assert(take_from_sending != 0);
+value -= take_from_sending;
+int look_from = rand() % n_neighbors;
+int i = look_from;
+while (true) {
+    auto neighbor = neighbors[i];
+    vertex_key v_from = forward ? visiting : neighbor;
+    vertex_key v_to = forward ? neighbor : visiting;
+    int after_modification = flow.current_value(v_from, v_to) + take_from_sending;
+    bool within_edge_limits = after_modification >= 0 && after_modification <= network.capacity(v_from, v_to);
 
-                if (take_from_sending > 0) {
-                    if (vertex_values.remaining_capacity(network, neighbor) >= take_from_sending && within_edge_limits) {
-                        vertex_values.add(network, neighbor, take_from_sending);
-                        flow.add_to_edge(v_from, v_to, take_from_sending);
-                        to_visit.push(neighbor);
-                        break;
-                    }
-                } else {
-                    if (vertex_values.throughput[neighbor] >= -take_from_sending && within_edge_limits) {
-                        vertex_values.add(network, neighbor, take_from_sending);
-                        flow.add_to_edge(v_from, v_to, take_from_sending);
-                        to_visit.push(neighbor);
-                        break;
-                    }
-                }
+    if (take_from_sending > 0) {
+        if (vertex_values.remaining_capacity(network, neighbor) >= take_from_sending && within_edge_limits) {
+            vertex_values.add(network, neighbor, take_from_sending);
+            flow.add_to_edge(v_from, v_to, take_from_sending);
+            to_visit.push(neighbor);
+            break;
+        }
+    }
+    else {
+        if (vertex_values.throughput[neighbor] >= -take_from_sending && within_edge_limits) {
+            vertex_values.add(network, neighbor, take_from_sending);
+            flow.add_to_edge(v_from, v_to, take_from_sending);
+            to_visit.push(neighbor);
+            break;
+        }
+    }
 
-                ++i;
-                if (i == n_neighbors) {
-                    i = 0;
-                }
+    ++i;
+    if (i == n_neighbors) {
+        i = 0;
+    }
 
-                assert(i != look_from);
-            }
+    assert(i != look_from);
+}
         }
     }
 }
 
-Flow random_admissible_flow(Network &network) {
+Flow random_admissible_flow(Network& network) {
     Flow flow(network.flow_value);
     propagate(network, flow, network.source, network.flow_value, true);
     return flow;
 }
 
-Flow mutate(Network &network, const Flow &original) {
+Flow mutate(Network& network, const Flow& original) {
     int old_value = original.value;
     Flow flow = original.make_copy(); // TODO assert test
 
@@ -193,7 +198,7 @@ Flow mutate(Network &network, const Flow &original) {
         edge_keys.push_back(a.first);
     }
     int n_edges = edge_keys.size();
-    int removing_i = rand()%n_edges;
+    int removing_i = rand() % n_edges;
     auto vertices = get_vertex_keys(edge_keys[removing_i]);
     auto v_from = vertices.first;
     auto v_to = vertices.second;
@@ -208,4 +213,75 @@ Flow mutate(Network &network, const Flow &original) {
     assert(new_value == old_value);
 
     return flow;
+}
+
+std::vector<Flow> decompose(const Flow& f, const Network &network) {
+    Flow flow_copy = f.make_copy();
+    std::vector<Flow> flow_decomposition;
+
+    Flow tmp_flow(1);
+
+    while (flow_copy.value) {
+        tmp_flow.empty_flow();
+
+        // find a unitary flow and subtract the flow from the copy
+
+        std::set<vertex_key> visited; // keeps a set of visited states, this should be redundant with the closed nodes set, which structure has the quickest find implementation?
+        std::stack<std::vector<vertex_key>> stack; // keeps the nodes yet to be opened; a stack of maps might be a better choice
+        std::set<std::vector<vertex_key>> closed_nodes; // keeps all of the states and their parents
+
+        vertex_key parent = 0;
+        std::vector<vertex_key> node(2);
+        std::vector<vertex_key> tmp(2);
+        node[0] = node[1] = 0;
+        stack.push(node);
+        visited.insert(node[0]);
+        closed_nodes.insert(node);
+        
+        do{ // find a valid unitary flow
+            tmp = stack.top();
+            if (visited.find(node[0]) == visited.end()) {
+                for (auto it = flow_copy.outgoing[tmp[0]].begin(); it != flow_copy.outgoing[tmp[0]].end(); ++it) {
+                    tmp[0] = *it;
+                    tmp[1] = parent;
+                    stack.push(tmp);
+                    visited.insert(tmp[0]);
+                    closed_nodes.insert(tmp);
+                }
+            }
+            stack.pop();
+
+        } while (tmp[0] != network.n_nodes);
+
+        node = tmp;
+
+        do { // make the path into a flow and subtract the flow from flow_copy
+            tmp_flow.add_edge(node[1], node[0], 1);
+            tmp_flow.subtract_from_edge(node[1], node[0], 1);
+
+            auto it = closed_nodes.begin();
+            while((*it)[0] != node[1]) ++it; // find the parent node in the closed_nodes set
+            node = *it;
+        } while (node[1] != 0);
+        
+        flow_decomposition.push_back(tmp_flow.make_copy());
+
+        --flow_copy.value;
+    }
+
+    return flow_decomposition;
+}
+
+Flow compose(std::vector<Flow> &f1, std::vector<Flow> &f2, const Network &network) { // ???cubic complexity of the length of the flow worst case scenario
+    Flow new_flow(0);
+
+    while (new_flow.value < network.flow_value) {
+        if (new_flow.value == network.flow_value - 1) {
+            while (!(f1.empty())) {
+
+            }
+        }
+    }
+
+    return new_flow;
 }

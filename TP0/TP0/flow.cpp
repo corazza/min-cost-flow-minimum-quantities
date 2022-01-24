@@ -2,6 +2,12 @@
 
 #include "flow.hpp"
 
+void Flow::empty_flow() {
+    this->values.clear();
+    this->outgoing.clear();
+    this->incoming.clear();
+}
+
 void Flow::add_edge(vertex_key v_from, vertex_key v_to, int value) {
     assert(v_from != v_to);
     edge_key edge = get_edge_key((vertex_key)v_from, (vertex_key)v_to);
@@ -21,6 +27,11 @@ int Flow::current_value(vertex_key v_from, vertex_key v_to) {
     } else {
         return this->values[edge];
     }
+}
+
+bool Flow::exists_edge(const edge_key& edge) {
+    if(this->values.find(edge) == this->values.end()) return true;
+    return false;
 }
 
 int Flow::recompute_value(Network &network) {
@@ -51,11 +62,32 @@ int Flow::remove_edge(vertex_key v_from, vertex_key v_to) {
 void Flow::add_to_edge(vertex_key v_from, vertex_key v_to, int value) {
     assert(v_from != v_to);
     edge_key edge = get_edge_key((vertex_key)v_from, (vertex_key)v_to);
-    if (this->values.find(edge) == this->values.end()) {
+    if (this->exists_edge(edge)) {
         this->add_edge(v_from, v_to, value);
     } else {
         this->values[edge] += value;
     }
+}
+
+void Flow::subtract_from_edge(vertex_key v_from, vertex_key v_to, int value) {
+    assert(v_from != v_to);
+    edge_key edge = get_edge_key((vertex_key)v_from, (vertex_key)v_to);
+    if (this->values[edge] > value) this->values[edge] -= value;
+    else
+        this->remove_edge(v_from, v_to);
+}
+
+void Flow::add_flows(const Flow& f) {
+    for (auto it1 = f.outgoing.begin(); it1 != f.outgoing.end(); ++it1) {
+        for (auto it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) {
+            this->add_to_edge(it1->first, *it2, f.values[get_edge_key(it1->first, *it2)]);
+        }
+        
+    }
+}
+
+void Flow::subtract_flows(const Flow& f) {
+
 }
 
 void Flow::print() {

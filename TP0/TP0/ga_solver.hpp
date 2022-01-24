@@ -1,6 +1,6 @@
 #include "flow.hpp"
 #include "network.hpp"
-
+#include <list>
 #define MUTATE_VALUE_PERCENT 0.1
 
 // - do we want to restrict the GA search space to admissible solutions only?
@@ -15,6 +15,10 @@ double fitness(Network &network, Flow &flow);
 
 Flow mutate(Network &network, const Flow &flow);
 Flow crossover(Flow &f1, Flow &f2);
+
+std::vector<Flow> decompose(const Flow &f, const Network& network);
+Flow compose(std::vector<Flow>& f1, std::vector<Flow>& f2, const Network& network);
+
 
 Flow ga_solver(Network &network, int population_size, float mutation_rate);
 
