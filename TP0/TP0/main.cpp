@@ -2,6 +2,9 @@
 #include "generator.hpp"
 #include "cplex.hpp"
 #include <chrono>
+
+/*
+
 int main() {
 
 	Network graf(4, 4, 2);
@@ -22,3 +25,4 @@ int main() {
 
 	return 0;
 }
+*/

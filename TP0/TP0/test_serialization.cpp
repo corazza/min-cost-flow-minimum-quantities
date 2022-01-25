@@ -10,6 +10,7 @@ using json = nlohmann::json;
 #include "network.hpp"
 #include "ga_solver.hpp"
 
+/*
 int main() {
     std::srand(time(NULL));
 
@@ -48,3 +49,5 @@ int main() {
 
     return 0;
 }
+
+*/

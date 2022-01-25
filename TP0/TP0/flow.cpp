@@ -80,14 +80,21 @@ void Flow::subtract_from_edge(vertex_key v_from, vertex_key v_to, int value) {
 void Flow::add_flows(const Flow& f) {
     for (auto it1 = f.outgoing.begin(); it1 != f.outgoing.end(); ++it1) {
         for (auto it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) {
-            this->add_to_edge(it1->first, *it2, f.values[get_edge_key(it1->first, *it2)]);
+            edge_key edge = get_edge_key(it1->first, *it2);
+            int value = f.values.at(edge);
+            this->add_to_edge(it1->first, *it2, value);
         }
-        
     }
 }
 
 void Flow::subtract_flows(const Flow& f) {
-
+    for (auto it1 = f.outgoing.begin(); it1 != f.outgoing.end(); ++it1) {
+        for (auto it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) {
+            edge_key edge = get_edge_key(it1->first, *it2);
+            int value = f.values.at(edge);
+            this->subtract_from_edge(it1->first, *it2, value);
+        }
+    }
 }
 
 void Flow::print() {

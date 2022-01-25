@@ -144,7 +144,6 @@
   <ItemGroup>
     <ClCompile Include="flow.cpp" />
     <ClCompile Include="ga_solver.cpp" />
-    <ClCompile Include="generator_old.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="generator.cpp" />
@@ -156,7 +155,6 @@
     <ClInclude Include="cplex.hpp" />
     <ClInclude Include="flow.hpp" />
     <ClInclude Include="ga_solver.hpp" />
-    <ClInclude Include="generator_old.hpp" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="keys.hpp" />
     <ClInclude Include="network.hpp" />
