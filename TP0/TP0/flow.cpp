@@ -72,9 +72,14 @@ void Flow::add_to_edge(vertex_key v_from, vertex_key v_to, int value) {
 void Flow::subtract_from_edge(vertex_key v_from, vertex_key v_to, int value) {
     assert(v_from != v_to);
     edge_key edge = get_edge_key((vertex_key)v_from, (vertex_key)v_to);
-    if (this->values[edge] > value) this->values[edge] -= value;
-    else
-        this->remove_edge(v_from, v_to);
+    if (this->exists_edge(edge)) {
+        if (this->values[edge] > value) {
+            this->values[edge] -= value;
+        }
+        else {
+            this->remove_edge(v_from, v_to);
+        }
+    }
 }
 
 void Flow::add_flows(const Flow& f) {
