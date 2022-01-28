@@ -272,15 +272,89 @@ std::vector<Flow> decompose(const Flow& f, const Network &network) {
     return flow_decomposition;
 }
 
-Flow compose(std::vector<Flow> &f1, std::vector<Flow> &f2, const Network &network) { // ???cubic complexity of the length of the flow worst case scenario
-    Flow new_flow(0);
+Flow compose(std::vector<Flow> &decom1, std::vector<Flow> &decom2, const Network &network) { // ???cubic complexity of the length of the flow worst case scenario - reduced to quadratic
+    Flow new_flow(0);                                                                        // by not testing every pair combination of decom1 and decom2, but decom1.size() pairs
+    Flow tmp(0);                                                                             // alternative would be to implement 
+    int random1, random2;
+    bool end = false;
+    bool backtrack;
+    std::vector<bool> checked_flows1(decom1.size(), 0), checked_flows2(decom1.size(), 0);
 
-    while (new_flow.value < network.flow_value) {
+
+    while (new_flow.value < network.flow_value && !end) {
+        // if there is a single remaining flow to be added
         if (new_flow.value == network.flow_value - 1) {
-            while (!(f1.empty())) {
+            //until all unary flows have been checked, check another one
+            while (!(decom1.empty()) && !end) {
+                random1 = rand() % decom1.size();
+                new_flow.add_flows(decom1[random1]);
 
+                if (new_flow.respects_flow_conservation()) end = true; // effectively ends the call to the funtion and returns the flow
+                else {
+                    new_flow.subtract_flows(decom1[random1]);
+                    decom1.erase(decom1.begin() + random1);
+                }
+            }
+            // if there is no valid fill for the flow, ?in theory shouldnt happen
+            if (!end) {
+                new_flow.empty_flow();
+                return new_flow;
             }
         }
+        //if 2 or more unary flows are missing to a full flow
+        else {
+            backtrack = false;
+            random1 = rand() % decom1.size();
+            random2 = rand() % decom2.size();
+
+            //find unchecked unary flows
+            while (random1 > -1) {
+                if (checked_flows1[random1]) {
+                    if (!backtrack && random1 != decom1.size() - 1) ++random1;
+                    else {
+                        if (random1 == decom1.size()) backtrack = true;
+                        else
+                            --random1;
+                    }
+                }
+            }
+
+            while (random2 > -1) {
+                if (checked_flows2[random2]) {
+                    if (!backtrack && random2 != decom2.size() - 1) ++random2;
+                    else {
+                        if (random2 == decom2.size()) backtrack = true;
+                        else
+                            --random2;
+                    }
+                }
+            }
+            //if all unary flows have been tested and none fit, ?in theory shouldnt happen
+            if (random1 == -1 || random2 == -1) {
+                end = true;
+                new_flow.empty_flow();
+            }
+
+            //check to see if the new flow is valid, if yes reset checked_flows1/2 and remove the unary flows added, if not check the next flow
+            if (!end) {
+                new_flow.add_flows(decom1[random1]);
+                new_flow.add_flows(decom2[random2]);
+
+                if (new_flow.respects_flow_conservation()) {
+                    decom1.erase(decom1.begin() + random1);
+                    decom2.erase(decom2.begin() + random2);
+
+                    checked_flows1.assign(decom1.size(), 0);
+                    checked_flows2.assign(decom2.size(), 0);
+                    new_flow.value += 2;
+                }
+                else {
+                    checked_flows1[random1] = true;
+                    checked_flows2[random2] = true;
+                }
+            }
+        }
+        
     }
 
     return new_flow;
