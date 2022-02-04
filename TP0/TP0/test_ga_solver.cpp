@@ -32,17 +32,23 @@ int main() {
 
     auto random_flow = random_admissible_flow(network);
     std::cout << "random flow: " << std::endl;
-    random_flow.print();
+    // random_flow.print();
     std::cout << "value=" << random_flow.recompute_value(network) << std::endl;
-    std::cout << std::endl;
+    // std::cout << std::endl;
 
-    auto mutated_flow = mutate(network, random_flow);
-    std::cout << "mutated flow: " << std::endl;
-    mutated_flow.print();
-    std::cout << "value=" << mutated_flow.recompute_value(network) << std::endl;
-    std::cout << std::endl;
+    // auto mutated_flow = mutate(network, random_flow);
+    // std::cout << "mutated flow: " << std::endl;
+    // mutated_flow.print();
+    // std::cout << "value=" << mutated_flow.recompute_value(network) << std::endl;
+    // std::cout << std::endl;
 
     // TODO crossover
+
+    auto decomposed = decompose(random_flow, network);
+    std::cout << "decomposed into " << decomposed.size() << " flows" << std::endl;
+
+
+    for (int i = 0; i < decomposed.size(); ++i) {}
 
     return 0;
 }

@@ -34,6 +34,25 @@ bool Flow::exists_edge(const edge_key& edge) {
     return false;
 }
 
+bool Flow::respects_flow_conservation() {
+    for (int i = this->source+1; i < this->sink; ++i) {
+        int incoming_sum = 0;
+        int outgoing_sum = 0;
+        for (auto incoming : this->incoming[i]) {
+            auto edge = get_edge_key(i, incoming);
+            incoming_sum += this->values[edge];
+        }
+        for (auto outgoing : this->outgoing[i]) {
+            auto edge = get_edge_key(i, outgoing);
+            outgoing_sum += this->values[edge];
+        }
+        if (incoming_sum != outgoing_sum) {
+            return false;
+        }
+    }
+    return true;
+}
+
 int Flow::recompute_value(Network &network) {
     int value = 0;
     for (auto v_from : this->incoming[network.sink]) {
@@ -110,7 +129,7 @@ void Flow::print() {
 }
 
 Flow Flow::make_copy() const {
-    Flow result(this->value);
+    Flow result(this->value, this->source, this->sink);
 
     result.values = this->values;
     result.outgoing = this->outgoing;

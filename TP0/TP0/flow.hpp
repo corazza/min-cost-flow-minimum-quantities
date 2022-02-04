@@ -4,6 +4,8 @@
 #include "network.hpp"
 
 struct Flow {
+    vertex_key source;
+    vertex_key sink;
     int value;
     std::unordered_map<edge_key, int> values;
 
@@ -32,7 +34,7 @@ struct Flow {
     
     Flow make_copy() const;
 
-    Flow(int value) : value(value) {}
+    Flow(int value, vertex_key source, vertex_key sink) : value(value), source(source), sink(sink) {}
 };
 
 #endif
