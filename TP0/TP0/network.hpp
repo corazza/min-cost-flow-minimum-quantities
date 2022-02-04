@@ -7,6 +7,8 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
+#include "flow.hpp"
+
 #include <set>
 #include <unordered_map>
 
@@ -37,6 +39,8 @@ struct Network {
                   bool vlb);
 
     void remove_edge(vertex_key v_from, vertex_key v_to);
+
+    bool respects_bounds(Flow &flow) const;
 
     void compute_effective_capacities();
 

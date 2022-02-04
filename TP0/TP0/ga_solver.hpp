@@ -13,10 +13,11 @@
 
 double fitness(Network &network, Flow &flow);
 
-Flow mutate(Network &network, const Flow &flow);
+Flow mutate(Network &network, Flow &flow);
 Flow crossover(Flow &f1, Flow &f2);
 
 std::vector<Flow> decompose(const Flow &f, const Network& network);
+std::vector<Flow> decompose2(const Flow &f, const Network& network);
 Flow compose(std::vector<Flow>& f1, std::vector<Flow>& f2, const Network& network);
 
 

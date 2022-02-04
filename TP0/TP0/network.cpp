@@ -25,6 +25,10 @@ void Network::remove_edge(vertex_key v_from, vertex_key v_to) {
     assert(!"Network::remove_edge unimplemented!");
 }
 
+bool Network::respects_bounds(Flow &flow) const {
+    return true; // TODO
+}
+
 int Network::capacity(vertex_key v_from, vertex_key v_to) {
     edge_key edge = get_edge_key((vertex_key)v_from, (vertex_key)v_to);
     if (this->capacities.find(edge) == this->capacities.end()) {
@@ -43,40 +47,23 @@ unsigned int Network::n_outgoing(vertex_key v) {
 }
 
 void Network::compute_effective_capacities() {
+    for (int i = this->source; i <= this->sink; ++i) {
+        this->vertex_effective_capacity[i] = 0;
+    }
+
     this->vertex_effective_capacity[this->sink] = this->flow_value;
 
     std::queue<vertex_key> to_visit; // assumes no cycles
     std::set<vertex_key> to_visit_check;
 
-    std::unordered_map<vertex_key, int> visit_count;
-    int max_visits = 0;
-
     for (auto &key : this->incoming[this->sink]) {
         to_visit.push(key);
     }
-
-    // std::cout << "before while" << std::endl;
-
-    // int i = 0;
 
     while (!to_visit.empty()) {
         auto visiting = to_visit.front();
         to_visit.pop();
         to_visit_check.erase(visiting);
-
-        // if (i % 1000 == 0) {
-        //     if (visit_count.find(visiting) == visit_count.end()) {
-        //         visit_count[visiting] = 0;
-        //     } else {
-        //         visit_count[visiting] += 1;
-        //         int current_visits = visit_count[visiting];
-        //         if (current_visits > max_visits) {
-        //             max_visits = current_visits;
-        //             std::cout << "visit record: " << visiting << " " << current_visits << " times, to_visit: " << to_visit.size() << std::endl;
-        //         }
-        //     }
-        // }
-        // ++i;
 
         for (auto &key : this->incoming[visiting]) {
             if (to_visit_check.find(key) == to_visit_check.end()) {
