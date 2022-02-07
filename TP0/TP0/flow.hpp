@@ -21,6 +21,9 @@ struct Flow {
     void subtract_from_edge(vertex_key v_from, vertex_key v_to, int value);
 
     int edge_value(vertex_key v_from, vertex_key v_to);
+    int outgoing_value(vertex_key v_from);
+    int incoming_value(vertex_key v_from);
+    int vertex_value(vertex_key v_from);
     int flow_value();
 
     bool respects_flow_conservation();

@@ -21,6 +21,29 @@ int Flow::edge_value(vertex_key v_from, vertex_key v_to) {
     }
 }
 
+int Flow::incoming_value(vertex_key v_to) {
+    int incoming_sum = 0;
+    for (auto v_from : this->incoming[v_to]) {
+        incoming_sum += this->edge_value(v_from, v_to);
+    }
+    return incoming_sum;
+}
+
+int Flow::outgoing_value(vertex_key v_from) {
+    int outgoing_sum = 0;
+    for (auto v_to : this->outgoing[v_from]) {
+        outgoing_sum += this->edge_value(v_from, v_to);
+    }
+    return outgoing_sum;
+}
+
+int Flow::vertex_value(vertex_key v_from) {
+    int incoming_value = this->incoming_value(v_from);
+    int outgoing_value = this->outgoing_value(v_from);
+    assert(incoming_value == outgoing_value);
+    return incoming_value;
+}
+
 bool Flow::exists_edge(const edge_key& edge) {
     if(this->values.find(edge) == this->values.end()) return true;
     return false;

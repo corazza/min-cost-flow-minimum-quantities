@@ -6,7 +6,7 @@
 #include <set>
 #include <stack>
 
-FlowNetwork generate_instance(Parameters p) {
+Network generate_instance(Parameters p) {
     Network network(p.n_nodes);
 
     assert(network.source == 0 && network.sink == network.n_nodes - 1);
@@ -34,7 +34,5 @@ FlowNetwork generate_instance(Parameters p) {
         }
     }
 
-    FlowNetwork flow_network(network, p.flow_value);
-
-    return flow_network;
+    return network;
 }
