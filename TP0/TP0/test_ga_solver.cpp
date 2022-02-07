@@ -27,8 +27,8 @@ int main() {
 
     FlowNetwork network = generate_instance(p);
     std::cout << "generated random network" << std::endl;
-    std::cout << "source: " << network.source << std::endl;
-    std::cout << "sink: " << network.sink << std::endl;
+    std::cout << "source: " << network.network.source << std::endl;
+    std::cout << "sink: " << network.network.sink << std::endl;
 
     auto random_flow1 = random_admissible_flow(network);
     std::cout << "first random flow:" << std::endl;

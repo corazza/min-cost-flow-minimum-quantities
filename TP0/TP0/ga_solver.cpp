@@ -57,12 +57,12 @@ struct ForwardBalancer {
             }
         }
 
-        this->throughput[network.source] = 0;
+        this->throughput[network.network.source] = 0;
 
-        for (auto v_to : flow.outgoing[network.source]) {
-            auto edge = get_edge_key(network.source, v_to);
+        for (auto v_to : flow.outgoing[network.network.source]) {
+            auto edge = get_edge_key(network.network.source, v_to);
             auto value = flow.values[edge];
-            this->throughput[network.source] += value;
+            this->throughput[network.network.source] += value;
         }
     }
 
@@ -126,7 +126,7 @@ void propagate(FlowNetwork &network, Flow &flow, vertex_key v_from, int send, bo
     while (!to_visit.empty()) {
         auto visiting = to_visit.front();
         to_visit.pop();
-        if ((visiting == network.sink && forward) || (visiting == network.source && !forward)) {
+        if ((visiting == network.network.sink && forward) || (visiting == network.network.source && !forward)) {
             continue;
         }
 
@@ -136,7 +136,7 @@ void propagate(FlowNetwork &network, Flow &flow, vertex_key v_from, int send, bo
         }
 
         std::set<vertex_key> directing_set =
-            forward ? network.outgoing[visiting] : network.incoming[visiting];
+            forward ? network.network.outgoing[visiting] : network.network.incoming[visiting];
 
         int n_neighbors = directing_set.size();
         std::vector<vertex_key> neighbors;
@@ -152,7 +152,7 @@ void propagate(FlowNetwork &network, Flow &flow, vertex_key v_from, int send, bo
                 vertex_key v_to = forward ? neighbor : visiting;
 
                 int neighbor_capacity = vertex_values.remaining_capacity(network, neighbor);
-                int edge_capacity = network.capacity(v_from, v_to);
+                int edge_capacity = network.network.capacity(v_from, v_to);
                 int capacity_both = min(neighbor_capacity, edge_capacity);
                 if (capacity_both > max_capacity) {
                     max_capacity = capacity_both;
@@ -211,7 +211,7 @@ void propagate(FlowNetwork &network, Flow &flow, vertex_key v_from, int send, bo
                 vertex_key v_to = forward ? neighbor : visiting;
                 int after_modification = flow.edge_value(v_from, v_to) + take_from_sending;
                 bool within_edge_limits =
-                    after_modification >= 0 && after_modification <= network.capacity(v_from, v_to);
+                    after_modification >= 0 && after_modification <= network.network.capacity(v_from, v_to);
 
                 if (take_from_sending > 0) {
                     if (vertex_values.remaining_capacity(network, neighbor) >= take_from_sending &&
@@ -237,7 +237,7 @@ void propagate(FlowNetwork &network, Flow &flow, vertex_key v_from, int send, bo
                 }
 
                 if (i == look_from) {
-                    std::cout << "within_edge_limits=" << within_edge_limits << ", after_modification=" << after_modification << ", capacity=" << network.capacity(v_from, v_to) << std::endl;
+                    std::cout << "within_edge_limits=" << within_edge_limits << ", after_modification=" << after_modification << ", capacity=" << network.network.capacity(v_from, v_to) << std::endl;
                     std::cout << "remaining capacity=" << vertex_values.remaining_capacity(network, neighbor) << ", take_from_sending=" << take_from_sending << std::endl;
                 }
                 assert(i != look_from);
@@ -247,8 +247,8 @@ void propagate(FlowNetwork &network, Flow &flow, vertex_key v_from, int send, bo
 }
 
 Flow random_admissible_flow(FlowNetwork &network) {
-    Flow flow(network.flow_value, network.source, network.sink);
-    propagate(network, flow, network.source, network.flow_value, true);
+    Flow flow(network.flow_value, network.network.source, network.network.sink);
+    propagate(network, flow, network.network.source, network.flow_value, true);
     return flow;
 }
 
@@ -270,7 +270,7 @@ Flow mutate(FlowNetwork &network, Flow &original) {
     propagate(network, flow, v_to, -removing_value, true);
     propagate(network, flow, v_from, -removing_value, false);
     flow.remove_edge(v_from, v_to);
-    propagate(network, flow, network.source, removing_value, true);
+    propagate(network, flow, network.network.source, removing_value, true);
 
     int new_value = flow.flow_value();
     assert(new_value == old_value);
@@ -350,7 +350,7 @@ std::vector<Flow> decompose2(const Flow &f, const FlowNetwork &network) {
         std::queue<vertex_key> to_visit;
         std::set<vertex_key> visited;
         std::map<vertex_key, vertex_key> unitary_path_parents;
-        to_visit.push(network.source);
+        to_visit.push(network.network.source);
         bool reached_sink = false;
         while (!reached_sink) { // loop until sink is added to unitary_path
             vertex_key visiting = to_visit.front();
@@ -363,15 +363,15 @@ std::vector<Flow> decompose2(const Flow &f, const FlowNetwork &network) {
                 }
                 to_visit.push(next_vertex);
                 unitary_path_parents[next_vertex] = visiting;
-                if (next_vertex == network.sink) {
+                if (next_vertex == network.network.sink) {
                     reached_sink = true;
                     break;
                 }
             }
         }
-        Flow unitary_flow(1, network.source, network.sink);
-        vertex_key current_vertex = network.sink;
-        while (current_vertex != network.source) {
+        Flow unitary_flow(1, network.network.source, network.network.sink);
+        vertex_key current_vertex = network.network.sink;
+        while (current_vertex != network.network.source) {
             vertex_key parent = unitary_path_parents[current_vertex];
             unitary_flow.add_edge(parent, current_vertex, 1);
             flow_copy.subtract_from_edge(parent, current_vertex, 1);
@@ -397,8 +397,8 @@ Flow compose(std::vector<Flow> &decom1, std::vector<Flow> &decom2,
     int decomposition_size = decom1.size();
     assert(decomposition_size == decom2.size());
     Flow new_flow(
-        0, network.source, network.sink);  // by not testing every pair combination of decom1 and decom2, but decom1.size() pairs
-    Flow tmp(0, network.source, network.sink);  // alternative would be to implement
+        0, network.network.source, network.network.sink);  // by not testing every pair combination of decom1 and decom2, but decom1.size() pairs
+    Flow tmp(0, network.network.source, network.network.sink);  // alternative would be to implement
 
     std::set<int> available1; // stores available indices into decom1
     std::set<int> available2; // this avoids the need to resize decom1, decom2 in each step (set operations are O(1) in contrast to vector)
