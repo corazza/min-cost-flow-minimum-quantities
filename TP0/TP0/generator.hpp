@@ -17,6 +17,6 @@ struct Parameters {
 
 };
 
-Network generate_instance(Parameters p);
+FlowNetwork generate_instance(Parameters p);
 
 #endif

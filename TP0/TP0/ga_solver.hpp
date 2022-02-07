@@ -11,16 +11,15 @@
 //   to work with, e.g. f conserves flow, f matches network, f_ij respects some bounds), and
 //   punish breaking others through a more complex fitness function
 
-double fitness(Network &network, Flow &flow);
+double fitness(FlowNetwork &network, Flow &flow);
 
-Flow mutate(Network &network, Flow &flow);
+Flow mutate(FlowNetwork &network, Flow &flow);
 Flow crossover(Flow &f1, Flow &f2);
 
-std::vector<Flow> decompose(const Flow &f, const Network& network);
-std::vector<Flow> decompose2(const Flow &f, const Network& network);
-Flow compose(std::vector<Flow>& f1, std::vector<Flow>& f2, const Network& network);
+std::vector<Flow> decompose(const Flow &f, const FlowNetwork& network);
+std::vector<Flow> decompose2(const Flow &f, const FlowNetwork& network);
+Flow compose(std::vector<Flow>& f1, std::vector<Flow>& f2, const FlowNetwork& network);
 
+Flow ga_solver(FlowNetwork &network, int population_size, float mutation_rate);
 
-Flow ga_solver(Network &network, int population_size, float mutation_rate);
-
-Flow random_admissible_flow(Network &network);
+Flow random_admissible_flow(FlowNetwork &network);

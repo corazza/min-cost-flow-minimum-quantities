@@ -1,6 +1,6 @@
 #include "cplex.hpp"
 
-double rjesenje_cplex(Network* graf) {
+double rjesenje_cplex(FlowNetwork* graf) {
 
 
     // definicija okruzja za rjesenje

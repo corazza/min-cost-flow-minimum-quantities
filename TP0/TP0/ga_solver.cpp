@@ -29,7 +29,7 @@ struct ForwardBalancer {
         return value;
     }
 
-    void add(Network &network, vertex_key v, int value) {
+    void add(FlowNetwork &network, vertex_key v, int value) {
         if (this->sending.find(v) == this->sending.end()) {
             this->sending[v] = value;
             this->throughput[v] = value;
@@ -41,7 +41,7 @@ struct ForwardBalancer {
         assert(throughput[v] <= network.vertex_effective_capacity[v]);
     }
 
-    ForwardBalancer(Network &network, Flow &flow) {
+    ForwardBalancer(FlowNetwork &network, Flow &flow) {
         for (auto edge : flow.values) {
             auto vertices = get_vertex_keys(edge.first);
             auto v_from = vertices.first;
@@ -66,7 +66,7 @@ struct ForwardBalancer {
         }
     }
 
-    int remaining_capacity(Network &network, vertex_key v) {
+    int remaining_capacity(FlowNetwork &network, vertex_key v) {
         if (this->throughput.find(v) == this->throughput.end()) {
             return network.vertex_effective_capacity[v];
         }
@@ -74,7 +74,7 @@ struct ForwardBalancer {
     }
 };
 
-void propagate(Network &network, Flow &flow, vertex_key v_from, int send, bool forward) {
+void propagate(FlowNetwork &network, Flow &flow, vertex_key v_from, int send, bool forward) {
     if (!network.computed_effective_capacities) {
         network.compute_effective_capacities();
     }
@@ -86,6 +86,42 @@ void propagate(Network &network, Flow &flow, vertex_key v_from, int send, bool f
     to_visit.push(v_from);
     vertex_values.add(network, v_from, send);
     bool absorbed = false;
+
+
+    // vertex_key visiting = network.source;
+    // std::set<vertex_key> directing_set =
+    //     forward ? network.outgoing[visiting] : network.incoming[visiting];
+
+    // int n_neighbors = directing_set.size();
+    // std::vector<vertex_key> neighbors;
+    // int max_capacity = 0;
+    // int max_throughput = 0;
+
+    // for (auto neighbor : directing_set) {
+    //     neighbors.push_back(neighbor);
+
+    //     vertex_key v_from = forward ? visiting : neighbor;
+    //     vertex_key v_to = forward ? neighbor : visiting;
+
+    //     int neighbor_capacity = vertex_values.remaining_capacity(network, neighbor);
+    //     int edge_capacity = network.capacity(v_from, v_to);
+    //     int capacity_both = min(neighbor_capacity, edge_capacity);
+    //     std::cout << "neighbor: " << neighbor << ", cap = " << neighbor_capacity << ", edge cap = " << edge_capacity << std::endl;
+    //     if (capacity_both > max_capacity) {
+    //         max_capacity = capacity_both;
+    //     }
+    //     int neighbor_throughput = vertex_values.throughput[neighbor];
+    //     int edge_throughput = flow.edge_value(v_from, v_to);
+    //     int throughput_both = min(neighbor_throughput, edge_throughput);
+    //     if (throughput_both > max_throughput) {
+    //         max_throughput = throughput_both;
+    //     }
+    // }
+
+    // int a;
+    // std::cout << "sink outgoing capacity: " << max_capacity << std::endl;
+    // std::cout << "send=" << send << std::endl;
+    // std::cin >> a;
 
     while (!to_visit.empty()) {
         auto visiting = to_visit.front();
@@ -131,37 +167,39 @@ void propagate(Network &network, Flow &flow, vertex_key v_from, int send, bool f
 
             int take_from_sending;
             if (value > 0) {
-                if (max_capacity == 0) {
-                    std::cout << "failed when visiting " << visiting << ", value = " << value << std::endl;
-                    int max_capacity = 0;
-                    int max_throughput = 0;
+                // if (max_capacity == 0) {
+                //     std::cout << "failed when visiting " << visiting << ", value = " << value << std::endl;
+                //     int max_capacity = 0;
+                //     int max_throughput = 0;
 
-                    for (auto neighbor : directing_set) {
-                        neighbors.push_back(neighbor);
+                //     for (auto neighbor : directing_set) {
+                //         neighbors.push_back(neighbor);
 
-                        vertex_key v_from = forward ? visiting : neighbor;
-                        vertex_key v_to = forward ? neighbor : visiting;
+                //         vertex_key v_from = forward ? visiting : neighbor;
+                //         vertex_key v_to = forward ? neighbor : visiting;
 
-                        int neighbor_capacity = vertex_values.remaining_capacity(network, neighbor);
-                        int edge_capacity = network.capacity(v_from, v_to);
-                        int capacity_both = min(neighbor_capacity, edge_capacity);
-                        std::cout << "neighbor: " << neighbor << ", cap = " << neighbor_capacity << ", edge cap = " << edge_capacity << std::endl;
-                        if (capacity_both > max_capacity) {
-                            max_capacity = capacity_both;
-                        }
-                        int neighbor_throughput = vertex_values.throughput[neighbor];
-                        int edge_throughput = flow.edge_value(v_from, v_to);
-                        int throughput_both = min(neighbor_throughput, edge_throughput);
-                        if (throughput_both > max_throughput) {
-                            max_throughput = throughput_both;
-                        }
-                    }
-                }
+                //         int neighbor_capacity = vertex_values.remaining_capacity(network, neighbor);
+                //         int edge_capacity = network.capacity(v_from, v_to);
+                //         int capacity_both = min(neighbor_capacity, edge_capacity);
+                //         std::cout << "neighbor: " << neighbor << ", cap = " << neighbor_capacity << ", edge cap = " << edge_capacity << std::endl;
+                //         if (capacity_both > max_capacity) {
+                //             max_capacity = capacity_both;
+                //         }
+                //         int neighbor_throughput = vertex_values.throughput[neighbor];
+                //         int edge_throughput = flow.edge_value(v_from, v_to);
+                //         int throughput_both = min(neighbor_throughput, edge_throughput);
+                //         if (throughput_both > max_throughput) {
+                //             max_throughput = throughput_both;
+                //         }
+                //     }
+                // }
                 assert(max_capacity > 0);
                 take_from_sending = min(value, (rand() % max_capacity) + 1);
+                take_from_sending = 1;
             } else {
                 assert(max_throughput > 0);
                 take_from_sending = max(value, -((rand() % max_throughput) + 1));
+                take_from_sending = -1;
             }
             assert(take_from_sending != 0);
             value -= take_from_sending;
@@ -198,19 +236,23 @@ void propagate(Network &network, Flow &flow, vertex_key v_from, int send, bool f
                     i = 0;
                 }
 
+                if (i == look_from) {
+                    std::cout << "within_edge_limits=" << within_edge_limits << ", after_modification=" << after_modification << ", capacity=" << network.capacity(v_from, v_to) << std::endl;
+                    std::cout << "remaining capacity=" << vertex_values.remaining_capacity(network, neighbor) << ", take_from_sending=" << take_from_sending << std::endl;
+                }
                 assert(i != look_from);
             }
         }
     }
 }
 
-Flow random_admissible_flow(Network &network) {
+Flow random_admissible_flow(FlowNetwork &network) {
     Flow flow(network.flow_value, network.source, network.sink);
     propagate(network, flow, network.source, network.flow_value, true);
     return flow;
 }
 
-Flow mutate(Network &network, Flow &original) {
+Flow mutate(FlowNetwork &network, Flow &original) {
     int old_value = original.flow_value();
     Flow flow = original.make_copy();  // TODO assert test
 
@@ -236,7 +278,7 @@ Flow mutate(Network &network, Flow &original) {
     return flow;
 }
 
-// std::vector<Flow> decompose(const Flow &f, const Network &network) {
+// std::vector<Flow> decompose(const Flow &f, const FlowNetwork &network) {
 //     Flow flow_copy = f.make_copy();
 //     std::vector<Flow> flow_decomposition;
 
@@ -299,7 +341,7 @@ Flow mutate(Network &network, Flow &original) {
 //     return flow_decomposition;
 // }
 
-std::vector<Flow> decompose2(const Flow &f, const Network &network) {
+std::vector<Flow> decompose2(const Flow &f, const FlowNetwork &network) {
     Flow flow_copy = f.make_copy();
     int decompose_into_n_flows = flow_copy.flow_value();
     std::vector<Flow> flow_decomposition;
@@ -350,7 +392,7 @@ auto select_random(const S &s, size_t n) {
 }
 
 Flow compose(std::vector<Flow> &decom1, std::vector<Flow> &decom2,
-             const Network &network) {  // ???cubic complexity of the length of the flow worst case
+             const FlowNetwork &network) {  // ???cubic complexity of the length of the flow worst case
                                         // scenario - reduced to quadratic
     int decomposition_size = decom1.size();
     assert(decomposition_size == decom2.size());

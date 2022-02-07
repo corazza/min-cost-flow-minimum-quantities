@@ -17,6 +17,10 @@
 using json = nlohmann::json;
 
 struct Network {
+
+};
+
+struct FlowNetwork {
     unsigned int n_nodes;
     vertex_key source;
     vertex_key sink;
@@ -59,14 +63,16 @@ struct Network {
 
     unsigned int n_outgoing(vertex_key v);
 
-    Network() : computed_effective_capacities(false) {}
-    Network(unsigned int n_nodes, unsigned int flow_value, unsigned int max_span_q)
+    FlowNetwork() : computed_effective_capacities(false) {}
+    FlowNetwork(unsigned int n_nodes, unsigned int flow_value, unsigned int max_span_q)
         : n_nodes(n_nodes), source(0), sink(n_nodes-1), flow_value(flow_value), computed_effective_capacities(false), max_span_q(max_span_q) {}
 };
 
 // ignore (utility for json serialization)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Network, n_nodes, source, sink, flow_value, costs, capacities,
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(FlowNetwork, n_nodes, source, sink, flow_value, costs, capacities,
                                    minimum_quantities, vlb, outgoing, incoming);
 
 
 #endif
+
+// layered_residual_network

@@ -16,16 +16,16 @@ int main() {
     Parameters p;
     p.n_nodes = 50;
     p.max_span_q = p.n_nodes / 2;
-    p.inclusion_p = 0.9;
-    p.vlb_p = 0.2;
-    p.flow_value = 25;
+    p.inclusion_p = 1;
+    p.vlb_p = 0.1;
+    p.flow_value = 50;
     p.cost_max = 20;
     p.alpha_1 = 4;
     p.alpha_2 = 5;
     p.alpha_3 = 10;
     p.alpha_4 = 10;
 
-    Network network = generate_instance(p);
+    FlowNetwork network = generate_instance(p);
     std::cout << "generated random network" << std::endl;
     std::cout << "source: " << network.source << std::endl;
     std::cout << "sink: " << network.sink << std::endl;

@@ -7,7 +7,7 @@
 #include <stack>
 #include <queue>
 
-void Network::add_edge(vertex_key v_from, vertex_key v_to, int cost, int capacity,
+void FlowNetwork::add_edge(vertex_key v_from, vertex_key v_to, int cost, int capacity,
                        int minimum_quantity, bool vlb) {
     assert(v_from != v_to);
     edge_key edge = get_edge_key((vertex_key)v_from, (vertex_key)v_to);
@@ -21,15 +21,15 @@ void Network::add_edge(vertex_key v_from, vertex_key v_to, int cost, int capacit
     this->incoming[v_to].insert(v_from);
 }
 
-void Network::remove_edge(vertex_key v_from, vertex_key v_to) {
-    assert(!"Network::remove_edge unimplemented!");
+void FlowNetwork::remove_edge(vertex_key v_from, vertex_key v_to) {
+    assert(!"FlowNetwork::remove_edge unimplemented!");
 }
 
-bool Network::respects_bounds(Flow &flow) const {
+bool FlowNetwork::respects_bounds(Flow &flow) const {
     return true; // TODO
 }
 
-int Network::capacity(vertex_key v_from, vertex_key v_to) {
+int FlowNetwork::capacity(vertex_key v_from, vertex_key v_to) {
     edge_key edge = get_edge_key((vertex_key)v_from, (vertex_key)v_to);
     if (this->capacities.find(edge) == this->capacities.end()) {
         return 0;
@@ -39,14 +39,14 @@ int Network::capacity(vertex_key v_from, vertex_key v_to) {
 }
 
 
-unsigned int Network::n_outgoing(vertex_key v) {
+unsigned int FlowNetwork::n_outgoing(vertex_key v) {
     if (this->outgoing.find(v) == this->outgoing.end()) {
         return 0;
     }
     return this->outgoing[v].size();
 }
 
-void Network::compute_effective_capacities() {
+void FlowNetwork::compute_effective_capacities() {
     for (int i = this->source; i <= this->sink; ++i) {
         this->vertex_effective_capacity[i] = 0;
     }
@@ -88,14 +88,14 @@ void Network::compute_effective_capacities() {
     this->computed_effective_capacities = true;
 }
 
-int Network::effective_capacity(vertex_key v) {
+int FlowNetwork::effective_capacity(vertex_key v) {
     if (this->vertex_effective_capacity.find(v) == this->vertex_effective_capacity.end()) {
         return 0;
     }
     return this->vertex_effective_capacity[v];
 }
 
-int Network::effective_capacity(vertex_key v_from, vertex_key v_to) {
+int FlowNetwork::effective_capacity(vertex_key v_from, vertex_key v_to) {
     edge_key edge = get_edge_key((vertex_key)v_from, (vertex_key)v_to);
 
     if (this->edge_effective_capacity.find(edge) == this->edge_effective_capacity.end()) {
@@ -104,12 +104,12 @@ int Network::effective_capacity(vertex_key v_from, vertex_key v_to) {
     return this->edge_effective_capacity[edge];
 }
 
-bool Network::exists_edge(vertex_key v_from, vertex_key v_to) {
+bool FlowNetwork::exists_edge(vertex_key v_from, vertex_key v_to) {
     edge_key edge = get_edge_key((vertex_key)v_from, (vertex_key)v_to);
     return this->costs.find(edge) != this->costs.end();
 }
 
-bool Network::exists_path(vertex_key v_from, vertex_key v_to) {
+bool FlowNetwork::exists_path(vertex_key v_from, vertex_key v_to) {
     std::set<vertex_key> visited;
     std::stack<vertex_key> to_visit;
     to_visit.push(v_from);

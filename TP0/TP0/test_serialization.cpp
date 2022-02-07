@@ -26,7 +26,7 @@ int main() {
     p.alpha_3 = 31;
     p.alpha_4 = 41;
 
-    Network network = generate_instance(p);
+    FlowNetwork network = generate_instance(p);
     std::cout << "generated random network" << std::endl;
 
     json j = network;
@@ -40,7 +40,7 @@ int main() {
     i >> j2;
     i.close();
 
-    Network instance2 = j2.get<Network>();
+    FlowNetwork instance2 = j2.get<FlowNetwork>();
     std::cout << "deserialized network from output.json" << std::endl;
 
     std::cout << "number of edges = " << network.n_edges() << std::endl;
