@@ -9,9 +9,13 @@ void Flow::empty_flow() {
     this->incoming.clear();
 }
 
-int Flow::edge_value(vertex_key v_from, vertex_key v_to) {
+int Flow::edge_value(vertex_key v_from, vertex_key v_to) const {
     assert(v_from != v_to);
     edge_key edge = get_edge_key((vertex_key)v_from, (vertex_key)v_to);
+    return this->edge_value(edge);
+}
+
+int Flow::edge_value(edge_key edge) const {
 
     if (this->values.find(edge) == this->values.end()) {
         return 0;
@@ -20,23 +24,29 @@ int Flow::edge_value(vertex_key v_from, vertex_key v_to) {
     }
 }
 
-int Flow::incoming_value(vertex_key v_to) {
+int Flow::incoming_value(vertex_key v_to) const {
+    if (this->incoming.find(v_to) == this->incoming.end()) {
+        return 0;
+    }
     int incoming_sum = 0;
-    for (auto v_from : this->incoming[v_to]) {
+    for (auto v_from : this->incoming.at(v_to)) {
         incoming_sum += this->edge_value(v_from, v_to);
     }
     return incoming_sum;
 }
 
-int Flow::outgoing_value(vertex_key v_from) {
+int Flow::outgoing_value(vertex_key v_from) const {
+    if (this->outgoing.find(v_from) == this->outgoing.end()) {
+        return 0;
+    }
     int outgoing_sum = 0;
-    for (auto v_to : this->outgoing[v_from]) {
+    for (auto v_to : this->outgoing.at(v_from)) {
         outgoing_sum += this->edge_value(v_from, v_to);
     }
     return outgoing_sum;
 }
 
-int Flow::vertex_value(vertex_key v_from) {
+int Flow::vertex_value(vertex_key v_from) const {
     int incoming_value = this->incoming_value(v_from);
     int outgoing_value = this->outgoing_value(v_from);
     assert(incoming_value == outgoing_value);
@@ -87,7 +97,7 @@ Flow Flow::make_copy() const {
     return result;
 }
 
-int Flow::flow_value() {
+int Flow::flow_value() const {
     int from_source = this->outgoing_value(this->source);
     int to_sink = this->incoming_value(this->sink);
     assert(from_source == to_sink);

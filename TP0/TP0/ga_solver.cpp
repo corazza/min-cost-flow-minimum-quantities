@@ -164,8 +164,15 @@ Flow mutate(Network &network, const Flow &original, std::set<edge_key> active_vl
     Flow flow = original.make_copy();
 
     for (int i = 0; i < num_perturbations; ++i) {
-        
+        std::vector<vertex_key> source_to_v_from = find_random_augmenting_path(network, flow, active_vlbs, network.source, network.sink, -1, false);
+        apply_augmenting_path(network, flow, active_vlbs, source_to_v_from, -1);
+        std::vector<vertex_key> v_to_to_sink = find_random_augmenting_path(network, flow, active_vlbs, network.source, network.sink, 1, true);
+        apply_augmenting_path(network, flow, active_vlbs, v_to_to_sink, 1);        
     }
+
+    assert(flow.respects_flow_conservation());
+    assert(flow.flow_value() == original.flow_value());
+    assert(network.respects_bounds(flow));
 
     return flow;
 }
@@ -231,14 +238,16 @@ Flow compose(std::vector<Flow> &decom1, std::vector<Flow> &decom2,
     std::set<int> available1; // stores available indices into decom1
     std::set<int> available2; // this avoids the need to resize decom1, decom2 in each step (set operations are O(1) in contrast to vector)
 
-    for (int i = 0; i < decomposition_size; ++i) { // in the beginning, all compositions are available
+    for (int i = 0; i < decomposition_size; ++i) { // in the beginning, all decomposition elements are available
         available1.insert(i);
         available2.insert(i);
     }
 
-    while (new_flow.flow_value() != flow_value) {
+    int current_value = new_flow.flow_value();
+    while (current_value != flow_value) {
+        std::cout << current_value << " / " << flow_value << std::endl;
         // if there is a single remaining flow to be added
-        if (new_flow.flow_value() == flow_value - 1) {
+        if (current_value == flow_value - 1) {
             // until all unary flows have been checked, check another one
             while (true) {
                 assert(available1.size() > 0);
@@ -254,17 +263,19 @@ Flow compose(std::vector<Flow> &decom1, std::vector<Flow> &decom2,
                 }
             }
         } else { // if 2 or more unary flows are missing to a full flow
-            std::set<std::pair<int, int> > checked_pairs; // keeps track of pairs we checked together
-            while (true) {
-                int random1 = rand() % available1.size(); // get random index
-                int selected1 = *select_random(available1, random1); // get the actual index into decom1
-                int random2 = rand() % available2.size();
-                int selected2 = *select_random(available2, random2);                
-                std::pair<int, int> selection_pair = std::make_pair(selected1, selected2);
-                if (checked_pairs.find(selection_pair) != checked_pairs.end()) { // did we check this pair?
-                    continue;
+            std::set<std::pair<int, int> > pairs_to_check;
+            for (auto first : available1) {
+                for (auto second : available2) {
+                    pairs_to_check.insert(std::make_pair(first, second));
                 }
-                checked_pairs.insert(std::make_pair(selected1, selected2));
+            }
+            bool found = false;
+            while (pairs_to_check.size() > 0) {
+                int random = rand() % pairs_to_check.size(); // get random index
+                auto checking_pair = *select_random(pairs_to_check, random); // get the actual index into decom1
+                pairs_to_check.erase(checking_pair);
+                int selected1 = checking_pair.first;
+                int selected2 = checking_pair.second;
 
                 // check to see if the new flow is valid, if yes reset checked_flows1/2 and remove the
                 // unary flows added, if not check the next flow
@@ -274,13 +285,21 @@ Flow compose(std::vector<Flow> &decom1, std::vector<Flow> &decom2,
                 if (new_flow.respects_flow_conservation() && network.respects_bounds(new_flow)) {
                     available1.erase(selected1);
                     available2.erase(selected2);
+                    found = true;
                     break; // redundant but for clarity
                 } else {
                     new_flow.subtract_flows(decom1[selected1]);
                     new_flow.subtract_flows(decom2[selected2]);
                 }
             }
+
+            if (!found) {
+                    throw "recomposition impossible";
+            }
         }
+
+        int new_value = new_flow.flow_value();
+        current_value = new_value;
     }
 
     return new_flow;

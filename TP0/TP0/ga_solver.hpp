@@ -10,7 +10,7 @@ std::pair<std::set<edge_key>, Flow> random_admissible_flow(Network &network, int
 
 double fitness(Network &network, Flow &flow);
 
-Flow mutate(Network &network, Flow &flow);
+Flow mutate(Network &network, const Flow &original, std::set<edge_key> active_vlbs, int num_perturbations);
 Flow crossover(Flow &f1, Flow &f2);
 
 std::vector<Flow> decompose(const Flow &f, const Network& network);

@@ -70,13 +70,13 @@ bool Network::exists_path(vertex_key v_from, vertex_key v_to) {
 bool Network::respects_bounds(Flow &flow) const {
     for (auto edge_value : flow.values) {
         if (edge_value.second > this->capacities.at(edge_value.first)) {
-            std::cout << "over capacity" << std::endl;
+            // std::cout << "over capacity" << std::endl;
             return false;
         }
         if (this->vlbs.find(edge_value.first) != this->vlbs.end()) {
             int minimum_quantity = this->minimum_quantities.at(edge_value.first);
             if (edge_value.second != 0 && edge_value.second < minimum_quantity) {
-                std::cout << "min q invalid" << std::endl;
+                // std::cout << "min q invalid" << std::endl;
                 return false;
             }
         }

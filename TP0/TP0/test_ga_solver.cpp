@@ -10,6 +10,43 @@ using json = nlohmann::json;
 #include "network.hpp"
 #include "ga_solver.hpp"
 
+void check_difference(Flow one, Flow two) {
+    int changed = 0;
+    int total = 0;
+    int difference = 0;
+    int value_one = 0;
+    int value_two = 0;
+
+    std::set<edge_key> edges;
+    for (auto edge_value : one.values) {
+        edges.insert(edge_value.first);
+    }
+    for (auto edge_value : two.values) {
+        edges.insert(edge_value.first);
+    }
+
+    for (auto edge : edges) {
+        int value_in_one = one.edge_value(edge);
+        int value_in_two = two.edge_value(edge);
+        difference += abs(value_in_two - value_in_one);
+        value_one += value_in_one;
+        value_two += value_in_two;
+        if (value_in_one != value_in_two) {
+            auto vertices = get_vertex_keys(edge);
+            vertex_key v_from = vertices.first;
+            vertex_key v_to = vertices.second;
+            // std::cout << "changed " << v_from << " -> " << v_to << ", one=" << value_in_one << ", two=" << value_in_two << std::endl;
+            ++changed;
+        }
+        if (value_in_one != 0 || value_in_two != 0) {
+            ++total;
+        }
+    }
+
+    std::cout << "changed=" << changed << ", total=" << total << std::endl;
+    std::cout << "value_one=" << value_one << ", value_two=" << value_two << ", difference=" << difference << std::endl;
+}
+
 int main() {
     std::srand(time(NULL));
 
@@ -30,25 +67,34 @@ int main() {
     std::cout << "source: " << network.source << std::endl;
     std::cout << "sink: " << network.sink << std::endl;
 
-    int generated = 0;
-    while (true) {
-        auto vlbs_flow = random_admissible_flow(network, p.flow_value, p.flow_value / 2);
-        ++generated;
-        if (generated % 10 == 0) {
-            std::cout << "generated" << std::endl;
-        }
-    }
+    auto vlbs_flow1 = random_admissible_flow(network, p.flow_value, p.flow_value / 2);
+    auto active_vlbs1 = vlbs_flow1.first;
+    auto random_flow1 = vlbs_flow1.second;
 
-    // auto mutated_flow = mutate(network, random_flow1);
+    auto vlbs_flow2 = random_admissible_flow(network, p.flow_value, p.flow_value / 2);
+    auto active_vlbs2 = vlbs_flow2.first;
+    auto random_flow2 = vlbs_flow2.second;
 
-    // std::cout << "decomposing..." << std::endl;
+    auto mutated_flow = mutate(network, random_flow1, active_vlbs1, 5);
 
-    // auto decomposed1 = decompose2(random_flow1, network);
-    // auto decomposed2 = decompose2(random_flow2, network);
+    std::cout << "decomposing..." << std::endl;
 
-    // std::cout << "recomposing..." << std::endl;
+    auto decomposed1 = decompose(random_flow1, network);
+    auto decomposed2 = decompose(random_flow2, network);
 
-    // auto composed = compose(decomposed1, decomposed2, network);
+    std::cout << "recomposing..." << std::endl;
+
+    auto recomposed = compose(decomposed1, decomposed2, network);
+
+    std::cout << "random_flow1 vs. recomposed" << std::endl;
+    check_difference(random_flow1, recomposed);
+    std::cout << std::endl;
+    std::cout << "random_flow2 vs. recomposed" << std::endl;
+    check_difference(random_flow2, recomposed);
+    std::cout << std::endl;
+    std::cout << "random_flow1 vs. random_flow2" << std::endl;
+    check_difference(random_flow1, random_flow2);
+    std::cout << std::endl;
 
     // std::cout << "re-composed flow: " << std::endl;
     // composed.print();

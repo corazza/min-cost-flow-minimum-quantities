@@ -20,11 +20,12 @@ struct Flow {
     void add_to_edge(vertex_key v_from, vertex_key v_to, int value);
     void subtract_from_edge(vertex_key v_from, vertex_key v_to, int value);
 
-    int edge_value(vertex_key v_from, vertex_key v_to);
-    int outgoing_value(vertex_key v_from);
-    int incoming_value(vertex_key v_from);
-    int vertex_value(vertex_key v_from);
-    int flow_value();
+    int edge_value(vertex_key v_from, vertex_key v_to) const;
+    int edge_value(edge_key) const;
+    int outgoing_value(vertex_key v_from) const;
+    int incoming_value(vertex_key v_from) const;
+    int vertex_value(vertex_key v_from) const;
+    int flow_value() const;
 
     bool respects_flow_conservation();
     bool exists_edge(const edge_key& edge);  // returns true if edge exists in flow this
