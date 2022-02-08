@@ -25,14 +25,14 @@ int main() {
     p.alpha_3 = 10;
     p.alpha_4 = 10;
 
+    Network network = generate_instance(p);
+    std::cout << "generated random network" << std::endl;
+    std::cout << "source: " << network.source << std::endl;
+    std::cout << "sink: " << network.sink << std::endl;
+
     int generated = 0;
     while (true) {
-        Network network = generate_instance(p);
-        // std::cout << "generated random network" << std::endl;
-        // std::cout << "source: " << network.source << std::endl;
-        // std::cout << "sink: " << network.sink << std::endl;
-        auto active_vlbs1 = random_active_vlbs(network, p.flow_value / 2);
-        auto random_flow1 = random_admissible_flow(network, p.flow_value, active_vlbs1);
+        auto vlbs_flow = random_admissible_flow(network, p.flow_value, p.flow_value / 2);
         ++generated;
         if (generated % 10 == 0) {
             std::cout << "generated" << std::endl;

@@ -50,7 +50,7 @@ std::vector<vertex_key> find_random_augmenting_path(Network &network, Flow &flow
         int num_suitable_neighbors = suitable_neighbors.size();
         if (num_suitable_neighbors == 0) {
             if (visiting == v_start) {
-                assert(!"visiting start with no suitable neighbors");
+                throw "visiting start with no suitable neighbors";
             }
             blacklisted.insert(visiting);
             visiting = parents.at(visiting);
@@ -141,6 +141,23 @@ Flow random_admissible_flow(Network &network, int flow_value, std::set<edge_key>
     assert(network.respects_bounds(flow));
 
     return flow;
+}
+
+std::pair<std::set<edge_key>, Flow> random_admissible_flow(Network &network, int flow_value, int up_to_value) {
+    int attempts = 0;
+    while (true) {
+        ++attempts;
+        try {
+            std::set<edge_key> active_vlbs = random_active_vlbs(network, up_to_value);
+            Flow flow = random_admissible_flow(network, flow_value, active_vlbs);
+            return std::make_pair(active_vlbs, flow);
+            if (attempts > 1) {
+                std::cout << "took " << attempts << " attempts" << std::endl;
+            }
+        } catch(const char* msg) {
+            
+        }
+    }
 }
 
 Flow mutate(Network &network, const Flow &original, std::set<edge_key> active_vlbs, int num_perturbations) {
