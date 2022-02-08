@@ -18,7 +18,6 @@ int main() {
     p.max_span_q = p.n_nodes / 2;
     p.inclusion_p = 1;
     p.vlb_p = 0.05;
-    p.active_vlb_p = 0.1;
     p.flow_value = 50;
     p.cost_max = 20;
     p.alpha_1 = 4;
@@ -26,22 +25,19 @@ int main() {
     p.alpha_3 = 10;
     p.alpha_4 = 10;
 
-    Network network = generate_instance(p);
-    std::cout << "generated random network" << std::endl;
-    std::cout << "source: " << network.source << std::endl;
-    std::cout << "sink: " << network.sink << std::endl;
-
-    auto flow_vlbs1 = random_admissible_flow(network, p.flow_value, p.active_vlb_p);
-    auto random_flow1 = flow_vlbs1.first;
-    auto active_vlbs1 = flow_vlbs1.second;
-    std::cout << "first random flow:" << std::endl;
-    random_flow1.print();
-    std::cout << std::endl;
-
-    // auto random_flow2 = random_admissible_flow(network);
-    // std::cout << "second random flow:" << std::endl;
-    // random_flow2.print();
-    // std::cout << std::endl;
+    int generated = 0;
+    while (true) {
+        Network network = generate_instance(p);
+        // std::cout << "generated random network" << std::endl;
+        // std::cout << "source: " << network.source << std::endl;
+        // std::cout << "sink: " << network.sink << std::endl;
+        auto active_vlbs1 = random_active_vlbs(network, p.flow_value / 2);
+        auto random_flow1 = random_admissible_flow(network, p.flow_value, active_vlbs1);
+        ++generated;
+        if (generated % 10 == 0) {
+            std::cout << "generated" << std::endl;
+        }
+    }
 
     // auto mutated_flow = mutate(network, random_flow1);
 

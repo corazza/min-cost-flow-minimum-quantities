@@ -36,14 +36,8 @@ struct Flow {
 
     Flow make_copy() const;
 
-    Flow(int value, vertex_key source, vertex_key sink)
-        : value(value), source(source), sink(sink), value_dirty(false) {}
-
-private:
-    int value;
-    bool value_dirty;
-
-    int recompute_value();
+    Flow(vertex_key source, vertex_key sink)
+        : source(source), sink(sink) {}
 };
 
 #endif

@@ -14,6 +14,11 @@ Flow compose(std::vector<Flow>& f1, std::vector<Flow>& f2, const Network& networ
 
 Flow ga_solver(Network &network, int population_size, float mutation_rate);
 
-std::pair<Flow, std::set<edge_key> > random_admissible_flow(Network &network, int flow_value, float active_vlb_p);
+std::set<edge_key> random_active_vlbs(Network &network, int up_to_flow_value);
+Flow random_admissible_flow(Network &network, int flow_value, std::set<edge_key> active_vlbs);
 
 std::vector<vertex_key> find_augmenting_path(Network &network, Flow &flow, vertex_key v_from, vertex_key v_to, int value);
+
+// -> 43 (21)
+
+// 25

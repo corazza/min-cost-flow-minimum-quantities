@@ -8,7 +8,6 @@ struct Parameters {
     unsigned int max_span_q; // 1 < q <= n_nodes. for node (i, j): j - i <= q
     float inclusion_p;
     float vlb_p;
-    float active_vlb_p;
     unsigned int flow_value;
     unsigned int cost_max;      // edge cost is in [0, cost_max]
     unsigned int alpha_1; // lower bound = 0 if not vlb

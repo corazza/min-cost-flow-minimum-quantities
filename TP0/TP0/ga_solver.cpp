@@ -9,50 +9,10 @@
 #include <stack>
 #include <unordered_map>
 #include <vector>
+#include <algorithm>
 
-// std::vector<vertex_key> find_augmenting_path(Network &network, Flow &flow, std::set<edge_key> active_vlbs, vertex_key v_start, vertex_key v_end, int value) {
-//     assert(network.exists_path(v_start, v_end));
-//     std::set<vertex_key> visited;
-//     std::unordered_map<vertex_key, vertex_key> parents;
-//     std::queue<vertex_key> to_visit;
-    
-//     to_visit.push(v_start);
 
-//     while (parents.find(v_end) == parents.end()) {
-//         vertex_key visiting = to_visit.front();
-//         to_visit.pop();
-//         std::set<vertex_key> neighbors = network.outgoing[visiting];
-//         // std::set<vertex_key
-//         for (auto neighbor : neighbors) {
-//             if (visited.find(neighbor) != visited.end()) {
-//                 continue;
-//             }
-//             auto edge = get_edge_key(visiting, neighbor);
-//             bool is_vlb = network.vlbs.find(edge) != network.vlbs.end();
-//             bool is_active_vlb = active_vlbs.find(edge) != active_vlbs.end();
-//             assert(!is_active_vlb || is_vlb);
-//             int minimum_quantity = network.minimum_quantities[edge];
-//             int current_value = flow.edge_value(visiting, neighbor);
-//             int new_value = current_value + value;
-
-//             bool within_bounds = new_value <= network.capacity(visiting, neighbor);
-//             within_bounds &= new_value >= 0;
-
-//             if (is_active_vlb) {
-//                 within_bounds &= new_value >= minimum_quantity;
-//             } else if (is_vlb) {
-//                 within_bounds &= new_value == 0;
-//             }
-
-//             if (within_bounds) {
-//                 parents[neighbor] = visiting;
-//                 to_visit.push(neighbor);
-//             }
-//         }
-//     }
-// }
-
-std::vector<vertex_key> find_random_augmenting_path(Network &network, Flow &flow, std::set<edge_key> active_vlbs, vertex_key v_start, vertex_key v_end, int value) {
+std::vector<vertex_key> find_random_augmenting_path(Network &network, Flow &flow, std::set<edge_key> active_vlbs, vertex_key v_start, vertex_key v_end, int value, bool ignore_mqs) {
     assert(network.exists_path(v_start, v_end));
     std::set<vertex_key> blacklisted;
     std::unordered_map<vertex_key, vertex_key> parents;
@@ -77,7 +37,7 @@ std::vector<vertex_key> find_random_augmenting_path(Network &network, Flow &flow
             within_bounds &= new_value >= 0;
 
             if (is_active_vlb) {
-                within_bounds &= new_value >= minimum_quantity;
+                within_bounds &= (new_value >= minimum_quantity) || ignore_mqs;
             } else if (is_vlb) {
                 within_bounds &= new_value == 0;
             }
@@ -114,68 +74,73 @@ std::vector<vertex_key> find_random_augmenting_path(Network &network, Flow &flow
     return path;
 }
 
-void apply_augmenting_path(Network &network, Flow &flow, std::set<edge_key> active_vlbs, std::vector<vertex_key> &path, std::unordered_map<edge_key, int> &vlb_debt, int value) {
+void apply_augmenting_path(Network &network, Flow &flow, std::set<edge_key> active_vlbs, std::vector<vertex_key> &path, int value) {
     vertex_key current_vertex = path[0];
     for (int i = 1; i < path.size(); ++i) {
         vertex_key next_vertex = path[i];
         edge_key edge = get_edge_key(current_vertex, next_vertex);
         flow.add_to_edge(current_vertex, next_vertex, value);
-        if (active_vlbs.find(edge) != active_vlbs.end()) {
-            vlb_debt[edge] -= value;
-        }
         current_vertex = next_vertex;
     }
 }
 
-std::pair<Flow, std::set<edge_key> > random_admissible_flow(Network &network, int flow_value, float active_vlb_p) {
+std::set<edge_key> random_active_vlbs(Network &network, int up_to_flow_value) {
     std::set<edge_key> active_vlbs;
-    for (auto edge : network.vlbs) {
-        float x = (float)rand() / (float)RAND_MAX;
-        if (x < active_vlb_p) {
+    std::vector<edge_key> vlbs(network.vlbs.begin(), network.vlbs.end());
+    int num_vlbs = vlbs.size();
+    int added = 0;
+    for (int i = 0; i < num_vlbs; ++i) {
+        int x_i = rand() % num_vlbs;
+        auto edge = vlbs[x_i];
+        if (active_vlbs.find(edge) == active_vlbs.end()) {
+            auto vertices = get_vertex_keys(edge);
+            vertex_key v_from = vertices.first;
+            vertex_key v_to = vertices.second;
+            int minimum_quantity = network.minimum_quantities.at(edge);
+            added += minimum_quantity;
+            if (added > up_to_flow_value) {
+                break;
+            }
             active_vlbs.insert(edge);
         }
     }
+    return active_vlbs;
+}
 
-    Flow flow(flow_value, network.source, network.sink);
-    std::unordered_map<edge_key, int> vlb_debt;
+Flow random_admissible_flow(Network &network, int flow_value, std::set<edge_key> active_vlbs) {
+    Flow flow(network.source, network.sink);
 
     for (auto edge : active_vlbs) {
         int minimum_quantity = network.minimum_quantities[edge];
         auto vertices = get_vertex_keys(edge);
         vertex_key v_from = vertices.first;
         vertex_key v_to = vertices.second;
-        flow.add_edge(v_from, v_to, minimum_quantity - 1); // -1 in the case lower bound == upper bound
-        vlb_debt[edge] = minimum_quantity;
-    }
-    
-    for (auto edge : active_vlbs) {
-        auto vertices = get_vertex_keys(edge);
-        vertex_key v_from = vertices.first;
-        vertex_key v_to = vertices.second;
-        flow.add_to_edge(v_from, v_to, 1);
-
-        for (int i = 0; i < vlb_debt[edge]; ++i) {
-            std::vector<vertex_key> source_to_v_from = find_random_augmenting_path(network, flow, active_vlbs, network.source, v_from, 1);
-            apply_augmenting_path(network, flow, active_vlbs, source_to_v_from, vlb_debt, 1);
-            std::vector<vertex_key> v_to_to_sink = find_random_augmenting_path(network, flow, active_vlbs, v_to, network.sink, 1);
-            apply_augmenting_path(network, flow, active_vlbs, v_to_to_sink, vlb_debt, 1);
+        int current_value = flow.edge_value(v_from, v_to);
+        int debt = minimum_quantity - current_value;
+        for (int i = 0; i < debt; ++i) {
+            std::vector<vertex_key> source_to_v_from = find_random_augmenting_path(network, flow, active_vlbs, network.source, v_from, 1, true);
+            apply_augmenting_path(network, flow, active_vlbs, source_to_v_from, 1);
+            std::vector<vertex_key> v_to_to_sink = find_random_augmenting_path(network, flow, active_vlbs, v_to, network.sink, 1, true);
+            apply_augmenting_path(network, flow, active_vlbs, v_to_to_sink, 1);
+            flow.add_to_edge(v_from, v_to, 1);
         }
-
-        vlb_debt[edge] = 0;
     }
 
-    assert(flow.outgoing_value(flow.source) == flow.incoming_value(flow.sink));
+    assert(flow.respects_flow_conservation());
+
     int current_value = flow.outgoing_value(flow.source);
-
-    while (current_value < flow_value) {
-        std::vector<vertex_key> source_to_sink = find_random_augmenting_path(network, flow, active_vlbs, network.source, network.sink, 1);
-        apply_augmenting_path(network, flow, active_vlbs, source_to_sink, vlb_debt, 1);
-        ++current_value;
+    int debt = flow_value - current_value;
+    assert(debt >= 0);
+    for (int i = 0; i < debt; ++i) {
+        std::vector<vertex_key> source_to_sink = find_random_augmenting_path(network, flow, active_vlbs, network.source, network.sink, 1, false);
+        apply_augmenting_path(network, flow, active_vlbs, source_to_sink, 1);
     }
 
-    // TODO respects_bounds, respects_conservation, correct value
+    assert(flow.respects_flow_conservation());
+    assert(flow.flow_value() == flow_value);
+    assert(network.respects_bounds(flow));
 
-    return make_pair(flow, active_vlbs);
+    return flow;
 }
 
 Flow mutate(Network &network, const Flow &original, std::set<edge_key> active_vlbs, int num_perturbations) {
@@ -215,7 +180,7 @@ std::vector<Flow> decompose(const Flow &f, const Network &network) {
                 }
             }
         }
-        Flow unitary_flow(1, network.source, network.sink);
+        Flow unitary_flow(network.source, network.sink);
         vertex_key current_vertex = network.sink;
         while (current_vertex != network.source) {
             vertex_key parent = unitary_path_parents[current_vertex];
@@ -243,9 +208,8 @@ Flow compose(std::vector<Flow> &decom1, std::vector<Flow> &decom2,
     int decomposition_size = decom1.size();
     assert(decomposition_size == decom2.size());
     int flow_value = decomposition_size;
-    Flow new_flow(
-        0, network.source, network.sink);  // by not testing every pair combination of decom1 and decom2, but decom1.size() pairs
-    Flow tmp(0, network.source, network.sink);  // alternative would be to implement
+    Flow new_flow(network.source, network.sink);  // by not testing every pair combination of decom1 and decom2, but decom1.size() pairs
+    Flow tmp(network.source, network.sink);  // alternative would be to implement
 
     std::set<int> available1; // stores available indices into decom1
     std::set<int> available2; // this avoids the need to resize decom1, decom2 in each step (set operations are O(1) in contrast to vector)
