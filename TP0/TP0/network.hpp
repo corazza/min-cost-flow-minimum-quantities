@@ -34,13 +34,17 @@ struct Network {
 
     void remove_edge(vertex_key v_from, vertex_key v_to);
 
-    int capacity(vertex_key v_from, vertex_key v_to);
+    int capacity(vertex_key v_from, vertex_key v_to) const;
 
     bool exists_edge(vertex_key v_from, vertex_key v_to);  // considers direction
 
-    bool exists_path(vertex_key v_from, vertex_key v_to);
+    bool exists_path(vertex_key v_from, vertex_key v_to) const;
 
-    bool respects_bounds(Flow &flow) const;
+    bool respects_lower_bounds(const Flow &flow) const;
+    bool respects_upper_bounds(const Flow &flow) const;
+    bool respects_bounds(const Flow &flow) const;
+
+    std::set<edge_key> detect_wannabe_active_vlbs(const Flow &flow) const;
 
     unsigned int n_edges() {
         return this->costs.size();
@@ -52,9 +56,6 @@ struct Network {
 };
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Network, n_nodes, source, sink, outgoing, incoming, costs, capacities, minimum_quantities, vlbs);
-
-// Efikasni algoritmi za rješavanje robusnih varijanti problema toka u mreži, Marko Špoljarec (2018., str. 30)
-Network layered_residual_network(Network &original);
 
 #endif
 
