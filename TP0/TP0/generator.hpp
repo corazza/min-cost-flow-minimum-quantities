@@ -3,7 +3,7 @@
 
 #include "network.hpp"
 
-struct Parameters {
+struct GeneratorParameters {
     unsigned int n_nodes;
     unsigned int max_span_q; // 1 < q <= n_nodes. for node (i, j): j - i <= q
     float inclusion_p;
@@ -17,6 +17,6 @@ struct Parameters {
 
 };
 
-Network generate_instance(Parameters p);
+Network generate_instance(GeneratorParameters p);
 
 #endif

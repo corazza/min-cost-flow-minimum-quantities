@@ -6,7 +6,7 @@
 #include <set>
 #include <stack>
 
-Network generate_instance(Parameters p) {
+Network generate_instance(GeneratorParameters p) {
     Network network(p.n_nodes);
 
     assert(network.source == 0 && network.sink == network.n_nodes - 1);

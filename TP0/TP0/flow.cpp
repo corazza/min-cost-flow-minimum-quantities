@@ -61,7 +61,7 @@ bool Flow::exists_edge(const edge_key& edge) {
     }
 }
 
-bool Flow::respects_flow_conservation() {
+bool Flow::respects_flow_conservation() const {
     for (int i = this->source+1; i < this->sink; ++i) {
         if (this->incoming_value(i) != this->outgoing_value(i)) {
             this->print();
@@ -72,16 +72,16 @@ bool Flow::respects_flow_conservation() {
     return this->outgoing_value(this->source) == this->incoming_value(this->sink);
 }
 
-void Flow::print() {
+void Flow::print() const {
     for (int i = this->source; i <= this->sink; ++i) {
         if (this->outgoing.find(i) == this->outgoing.end()) {
             continue;
         }
-        if (this->outgoing[i].size() == 0) {
+        if (this->outgoing.at(i).size() == 0) {
             continue;
         }
         std::cout << i << std::endl;
-        for (auto outgoing : this->outgoing[i]) {
+        for (auto outgoing : this->outgoing.at(i)) {
             std::cout << "  -> " << outgoing << " (" << this->edge_value(i, outgoing) << ")" << std::endl;
         }
     }

@@ -27,13 +27,13 @@ struct Flow {
     int vertex_value(vertex_key v_from) const;
     int flow_value() const;
 
-    bool respects_flow_conservation();
+    bool respects_flow_conservation() const;
     bool exists_edge(const edge_key& edge);  // returns true if edge exists in flow this
 
     void add_flows(const Flow& f);       // destructively adds flow f to this
     void subtract_flows(const Flow& f);  // destructively subracts flow f from flow this
 
-    void print();
+    void print() const ;
 
     Flow make_copy() const;
 

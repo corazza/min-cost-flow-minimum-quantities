@@ -69,22 +69,26 @@ bool Network::exists_path(vertex_key v_from, vertex_key v_to) const {
     return false;
 }
 
-bool Network::respects_upper_bounds(const Flow &flow) const {
+bool Network::respects_upper_bounds(const Flow &flow, bool report) const {
     for (auto edge_value : flow.values) {
         if (edge_value.second > this->capacities.at(edge_value.first)) {
-            // std::cout << "over capacity" << std::endl;
+            if (report) {
+                std::cout << "over capacity" << std::endl;
+            }
             return false;
         }
     }
     return true;
 }
 
-bool Network::respects_lower_bounds(const Flow &flow) const {
+bool Network::respects_lower_bounds(const Flow &flow, bool report) const {
     for (auto edge_value : flow.values) {
         if (this->vlbs.find(edge_value.first) != this->vlbs.end()) {
             int minimum_quantity = this->minimum_quantities.at(edge_value.first);
             if (edge_value.second != 0 && edge_value.second < minimum_quantity) {
-                // std::cout << "min q invalid" << std::endl;
+                if (report) {
+                    std::cout << "min q invalid" << std::endl;
+                }
                 return false;
             }
         }
@@ -92,8 +96,17 @@ bool Network::respects_lower_bounds(const Flow &flow) const {
     return true;
 }
 
-bool Network::respects_bounds(const Flow &flow) const {
-    return this->respects_lower_bounds(flow) && this->respects_upper_bounds(flow);
+bool Network::respects_bounds(const Flow &flow, bool report) const {
+    return this->respects_lower_bounds(flow, report) && this->respects_upper_bounds(flow, report);
+}
+
+int Network::total_cost(const Flow &flow) const {
+    int cost = 0;
+    for (auto edge_value : flow.values) {
+        int edge_cost = this->costs.at(edge_value.first);
+        cost += edge_cost * edge_value.second;
+    }
+    return cost;
 }
 
 std::set<edge_key> Network::detect_wannabe_active_vlbs(const Flow &flow) const {

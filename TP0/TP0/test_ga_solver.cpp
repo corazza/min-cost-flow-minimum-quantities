@@ -9,32 +9,33 @@ using json = nlohmann::json;
 #include "generator.hpp"
 #include "network.hpp"
 #include "ga_solver.hpp"
+#include "util.hpp"
 
 int main() {
     std::srand(time(NULL));
 
-    Parameters p;
+    GeneratorParameters p;
     p.n_nodes = 50;
     p.max_span_q = p.n_nodes / 2;
-    p.inclusion_p = 1;
+    p.inclusion_p = 0.5;
     p.vlb_p = 0.05;
-    p.flow_value = 50;
     p.cost_max = 20;
     p.alpha_1 = 4;
     p.alpha_2 = 5;
     p.alpha_3 = 10;
     p.alpha_4 = 10;
 
+    SolverParameters sp;
+    sp.num_perturbations = 2;
+    sp.generation_size = 100;
+    sp.num_steps = 10000;
+    sp.flow_value = 10;
+    sp.best_of = 3;
+    // sp.elitism = sp.generation_size / 20;
+
     Network network = generate_instance(p);
-
-    auto vlbs_flow1 = random_admissible_flow(network, p.flow_value, p.flow_value / 2);
-    auto active_vlbs1 = vlbs_flow1.first;
-    auto random_flow1 = vlbs_flow1.second;
-
-    auto vlbs_flow2 = random_admissible_flow(network, p.flow_value, p.flow_value / 2);
-    auto active_vlbs2 = vlbs_flow2.first;
-    auto random_flow2 = vlbs_flow2.second;
-
-    auto mutated_flow = mutate(network, random_flow1, active_vlbs1, 5);
-    auto crossover_flow = crossover(network, random_flow1, random_flow2);
+    std::cout << "generated problem instance..." << std::endl;
+    auto best_solution = ga_solver(network, sp, sp.num_steps / 25);
+    // auto last_generation = ga_solver(network, sp, 1);
+    std::cout << "lowest cost: " << best_solution.cost << std::endl;
 }

@@ -40,9 +40,11 @@ struct Network {
 
     bool exists_path(vertex_key v_from, vertex_key v_to) const;
 
-    bool respects_lower_bounds(const Flow &flow) const;
-    bool respects_upper_bounds(const Flow &flow) const;
-    bool respects_bounds(const Flow &flow) const;
+    bool respects_lower_bounds(const Flow &flow, bool report) const;
+    bool respects_upper_bounds(const Flow &flow, bool report) const;
+    bool respects_bounds(const Flow &flow, bool report) const;
+
+    int total_cost(const Flow &flow) const;
 
     std::set<edge_key> detect_wannabe_active_vlbs(const Flow &flow) const;
 
