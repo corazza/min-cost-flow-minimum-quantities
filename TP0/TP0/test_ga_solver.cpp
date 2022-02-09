@@ -62,6 +62,9 @@ int main() {
     p.alpha_3 = 10;
     p.alpha_4 = 10;
 
+    for (int i = 0; i < 100; ++i) {
+
+
     Network network = generate_instance(p);
     std::cout << "generated random network" << std::endl;
     std::cout << "source: " << network.source << std::endl;
@@ -69,28 +72,32 @@ int main() {
 
     auto vlbs_flow1 = random_admissible_flow(network, p.flow_value, p.flow_value / 2);
     auto active_vlbs1 = vlbs_flow1.first;
+    std::cout << "active 1: " << active_vlbs1.size() << std::endl;
     auto random_flow1 = vlbs_flow1.second;
 
     auto vlbs_flow2 = random_admissible_flow(network, p.flow_value, p.flow_value / 2);
     auto active_vlbs2 = vlbs_flow2.first;
+    std::cout << "active 2: " << active_vlbs2.size() << std::endl;
     auto random_flow2 = vlbs_flow2.second;
 
     auto mutated_flow = mutate(network, random_flow1, active_vlbs1, 5);
 
     std::cout << "decomposing..." << std::endl;
 
-    auto decomposed1 = decompose(random_flow1, network);
-    auto decomposed2 = decompose(random_flow2, network);
+    std::vector<Flow> decomposed1 = decompose(random_flow1, network);
+    std::vector<Flow> decomposed2 = decompose(random_flow2, network);
 
     std::cout << "recomposing..." << std::endl;
 
-    auto recomposed = compose(decomposed1, decomposed2, network);
+    std::pair<std::set<edge_key>, Flow> recomposed = compose(decomposed1, decomposed2, network);
+    auto recomposed_vlbs = recomposed.first;
+    auto recomposed_flow = recomposed.second;
 
     std::cout << "random_flow1 vs. recomposed" << std::endl;
-    check_difference(random_flow1, recomposed);
+    check_difference(random_flow1, recomposed_flow);
     std::cout << std::endl;
     std::cout << "random_flow2 vs. recomposed" << std::endl;
-    check_difference(random_flow2, recomposed);
+    check_difference(random_flow2, recomposed_flow);
     std::cout << std::endl;
     std::cout << "random_flow1 vs. random_flow2" << std::endl;
     check_difference(random_flow1, random_flow2);
@@ -98,4 +105,5 @@ int main() {
 
     // std::cout << "re-composed flow: " << std::endl;
     // composed.print();
+    }
 }
