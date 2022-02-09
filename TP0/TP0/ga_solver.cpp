@@ -193,9 +193,9 @@ Flow mutate(const Network &network, const Flow &original, std::set<edge_key> act
     Flow flow = original.make_copy();
 
     for (int i = 0; i < num_perturbations; ++i) {
-        std::vector<vertex_key> source_to_v_from = find_random_augmenting_path(network, flow, active_vlbs, network.source, network.sink, -1, false); // TODO FIXME
+        std::vector<vertex_key> source_to_v_from = find_random_augmenting_path(network, flow, active_vlbs, network.source, network.sink, -1, true);
         apply_augmenting_path(network, flow, active_vlbs, source_to_v_from, -1);
-        std::vector<vertex_key> v_to_to_sink = find_random_augmenting_path(network, flow, active_vlbs, network.source, network.sink, 1, false); // TODO FIXME
+        std::vector<vertex_key> v_to_to_sink = find_random_augmenting_path(network, flow, active_vlbs, network.source, network.sink, 1, true);
         apply_augmenting_path(network, flow, active_vlbs, v_to_to_sink, 1);        
     }
 
@@ -329,6 +329,7 @@ Flow compose_throws(std::vector<Flow> &decom1, std::vector<Flow> &decom2, std::s
 
     int current_value = new_flow.flow_value();
     while (current_value != flow_value) {
+        std::cout << current_value << " / " << flow_value << std::endl;
         // if there is a single remaining flow to be added
         if (available1.size() == 0 || available2.size() == 0) {
             std::set<int> *available = &available1;
