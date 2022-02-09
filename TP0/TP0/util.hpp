@@ -17,4 +17,7 @@ inline int max(int a, int b) {
     }
 }
 
+// template<typename S>
+// auto select_random(const S &s, size_t n);
+
 #endif

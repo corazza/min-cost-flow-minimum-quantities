@@ -1,3 +1,6 @@
+#ifndef GA_SOLVER_H
+#define GA_SOLVER_H
+
 #include "flow.hpp"
 #include "network.hpp"
 #include <list>
@@ -13,7 +16,7 @@ Flow fix_flow_value(const Network &network, const Flow &original, std::set<edge_
 double fitness(Network &network, Flow &flow);
 
 Flow mutate(const Network &network, const Flow &original, std::set<edge_key> active_vlbs, int num_perturbations);
-Flow crossover(Flow &f1, Flow &f2);
+Flow crossover(const Network &network, Flow &f1, Flow &f2);
 
 std::vector<Flow> decompose(const Flow &f, const Network& network);
 Flow compose_throws(std::vector<Flow> &decom1, std::vector<Flow> &decom2, std::set<edge_key> active_vlbs, const Network& network);
@@ -21,7 +24,4 @@ std::pair<std::set<edge_key>, Flow> compose(std::vector<Flow> &decom1, std::vect
 
 Flow ga_solver(const Network &network, int population_size, float mutation_rate);
 
-
-// -> 43 (21)
-
-// 25
+#endif

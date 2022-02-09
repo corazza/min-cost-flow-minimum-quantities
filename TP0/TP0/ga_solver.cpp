@@ -1,6 +1,5 @@
 #include "ga_solver.hpp"
 #include "util.hpp"
-// #include "balancer.hpp"
 
 #include <stdlib.h>
 #include <iostream>
@@ -160,6 +159,7 @@ Flow fix_flow_value(const Network &network, const Flow &original, std::set<edge_
     return flow;
 }
 
+// main function that generates a random admissible flow, can throw an exception
 Flow random_admissible_flow_throws(const Network &network, int flow_value, std::set<edge_key> active_vlbs) {
     Flow flow(network.source, network.sink);
     flow = fix_vlbs(network, flow, active_vlbs);
@@ -250,14 +250,6 @@ std::vector<Flow> decompose(const Flow &f, const Network &network) {
     return flow_decomposition;
 }
 
-template<typename S>
-auto select_random(const S &s, size_t n) {
-  auto it = std::begin(s);
-  // 'advance' the iterator n times
-  std::advance(it, n);
-  return it;
-}
-
 std::set<edge_key> decomp_vlbs(const Network &network, std::vector<Flow> &decom) {
     std::set<edge_key> vlbs;
     for (auto & flow : decom) {
@@ -277,6 +269,14 @@ bool contains_only_active(const Network &network, const Flow &flow, std::set<edg
         }
     }
     return true;
+}
+
+template<typename S>
+auto select_random(const S &s, size_t n) {
+  auto it = std::begin(s);
+  // 'advance' the iterator n times
+  std::advance(it, n);
+  return it;
 }
 
 std::set<edge_key> joint_random_decom_vlbs(const Network &network, std::vector<Flow> &decom1, std::vector<Flow> &decom2) {
@@ -315,7 +315,6 @@ Flow compose_throws(std::vector<Flow> &decom1, std::vector<Flow> &decom2, std::s
     std::set<int> available1; // stores available indices into decom1
     std::set<int> available2; // this avoids the need to resize decom1, decom2 in each step (set operations are O(1) in contrast to vector)
 
-
     for (int i = 0; i < decomposition_size; ++i) { // in the beginning, all decomposition elements are available
         if (contains_only_active(network, decom1[i], active_vlbs)) {
             available1.insert(i);
@@ -324,8 +323,6 @@ Flow compose_throws(std::vector<Flow> &decom1, std::vector<Flow> &decom2, std::s
             available2.insert(i);
         }
     }
-
-    std::cout << "available1=" << available1.size() << ", available2=" << available2.size() << std::endl;
 
     int current_value = new_flow.flow_value();
     while (current_value != flow_value) {
@@ -392,11 +389,8 @@ Flow compose_throws(std::vector<Flow> &decom1, std::vector<Flow> &decom2, std::s
     }
 
     // auto active_vlbs = network.detect_wannabe_active_vlbs(new_flow); TODO FIXME check if they are the same as preset ones
-    std::cout << "active c: " << active_vlbs.size() << std::endl;
     new_flow = fix_vlbs(network, new_flow, active_vlbs);
-    std::cout << "fixed vlbs" << std::endl;
     new_flow = fix_flow_value(network, new_flow, active_vlbs, flow_value);
-    std::cout << "fixed flow value" << std::endl;
 
     assert(new_flow.respects_flow_conservation());
     assert(new_flow.flow_value() == flow_value);
@@ -422,3 +416,49 @@ std::pair<std::set<edge_key>, Flow> compose(std::vector<Flow> &decom1, std::vect
         }
     }
 }
+
+Flow crossover(const Network &network, Flow &f1, Flow &f2) {
+    std::vector<Flow> decomposed1 = decompose(f1, network);
+    std::vector<Flow> decomposed2 = decompose(f2, network);
+    std::pair<std::set<edge_key>, Flow> recomposed = compose(decomposed1, decomposed2, network);
+    auto recomposed_vlbs = recomposed.first;
+    auto recomposed_flow = recomposed.second;
+    return recomposed_flow;
+}
+
+// void check_difference(Flow one, Flow two) {
+//     int changed = 0;
+//     int total = 0;
+//     int difference = 0;
+//     int value_one = 0;
+//     int value_two = 0;
+
+//     std::set<edge_key> edges;
+//     for (auto edge_value : one.values) {
+//         edges.insert(edge_value.first);
+//     }
+//     for (auto edge_value : two.values) {
+//         edges.insert(edge_value.first);
+//     }
+
+//     for (auto edge : edges) {
+//         int value_in_one = one.edge_value(edge);
+//         int value_in_two = two.edge_value(edge);
+//         difference += abs(value_in_two - value_in_one);
+//         value_one += value_in_one;
+//         value_two += value_in_two;
+//         if (value_in_one != value_in_two) {
+//             auto vertices = get_vertex_keys(edge);
+//             vertex_key v_from = vertices.first;
+//             vertex_key v_to = vertices.second;
+//             // std::cout << "changed " << v_from << " -> " << v_to << ", one=" << value_in_one << ", two=" << value_in_two << std::endl;
+//             ++changed;
+//         }
+//         if (value_in_one != 0 || value_in_two != 0) {
+//             ++total;
+//         }
+//     }
+
+//     std::cout << "changed=" << changed << ", total=" << total << std::endl;
+//     std::cout << "value_one=" << value_one << ", value_two=" << value_two << ", difference=" << difference << std::endl;
+// }
