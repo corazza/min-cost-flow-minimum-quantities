@@ -1,0 +1,1 @@
+C:/Users/Vilim/AppData/Local/Programs/Python/Python310/python.exe c:/Users/Vilim/Desktop/py/VisualNetwork.py
