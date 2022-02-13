@@ -1,13 +1,20 @@
 # Min Cost Network Flow with Minimum Quantities
 
-## Python dependencies
+## Visualization
 
-(Install miniconda)
+(Suggestion: install miniconda)
 
 1. `conda install matplotlib`
 2. `conda install -c anaconda networkx`
 3. Download graphviz: https://www.graphviz.org/download/
 4. Also install python bindings: `conda install --channel conda-forge pygraphviz`
+
+In repository root:
+
+    python python/VisualNetwork.py tp0/tp0/output_network.json tp0/tp0/output_solution.json
+
+- `tp0/tp0/output_network.json` is the path to the network JSON
+- `tp0/tp0/output_solution.json` is the path to the flow JSON
 
 **Problem instance:**
 - directed graph `G = (V, E)`
