@@ -1,0 +1,12 @@
+{
+    "alpha_1": 4,
+    "alpha_2": 5,
+    "alpha_3": 10,
+    "alpha_4": 10,
+    "cost_max": 20,
+    "flow_value": 3046538816,
+    "inclusion_p": 0.5,
+    "max_span_q": 7,
+    "n_nodes": 15,
+    "vlb_p": 0.05000000074505806
+}

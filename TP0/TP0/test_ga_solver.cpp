@@ -14,16 +14,11 @@ using json = nlohmann::json;
 int main() {
     std::srand(time(NULL));
 
-    GeneratorParameters p;
-    p.n_nodes = 50;
-    p.max_span_q = p.n_nodes / 2;
-    p.inclusion_p = 0.5;
-    p.vlb_p = 0.05;
-    p.cost_max = 20;
-    p.alpha_1 = 4;
-    p.alpha_2 = 5;
-    p.alpha_3 = 10;
-    p.alpha_4 = 10;
+    std::ifstream i_params("generator_parameters.json");
+    json j_params;
+    i_params >> j_params;
+    i_params.close();
+    GeneratorParameters p = j_params.get<GeneratorParameters>();
 
     SolverParameters sp;
     sp.num_perturbations = 2;

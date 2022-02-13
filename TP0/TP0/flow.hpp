@@ -2,6 +2,8 @@
 #define FLOW_H
 
 #include "keys.hpp"
+#include "json.hpp"
+using json = nlohmann::json;
 
 #include <set>
 #include <unordered_map>
@@ -40,5 +42,7 @@ struct Flow {
     Flow(vertex_key source, vertex_key sink)
         : source(source), sink(sink) {}
 };
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Flow, source, sink, values, outgoing, incoming);
 
 #endif

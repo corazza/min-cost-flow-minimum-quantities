@@ -1,5 +1,14 @@
 # Min Cost Network Flow with Minimum Quantities
 
+## Python dependencies
+
+(Install miniconda)
+
+1. `conda install matplotlib`
+2. `conda install -c anaconda networkx`
+3. Download graphviz: https://www.graphviz.org/download/
+4. Also install python bindings: `conda install --channel conda-forge pygraphviz`
+
 **Problem instance:**
 - directed graph `G = (V, E)`
 - a source `s ∈ V`, a sink `t ∈ V`

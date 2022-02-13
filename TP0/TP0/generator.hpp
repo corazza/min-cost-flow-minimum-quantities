@@ -17,6 +17,8 @@ struct GeneratorParameters {
 
 };
 
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(GeneratorParameters, n_nodes, max_span_q, inclusion_p, vlb_p, flow_value, cost_max, alpha_1, alpha_2, alpha_3, alpha_4);
+
 Network generate_instance(GeneratorParameters p);
 
 #endif

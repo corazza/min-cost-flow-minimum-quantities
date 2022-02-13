@@ -575,6 +575,14 @@ int cost(const Network &network, const Flow &flow) {
     return network.total_cost(flow);
 }
 
+Solution random_solution(const Network &network, int flow_value) {
+    auto vlbs_flow = random_admissible_flow(network, flow_value, flow_value / 2);
+    auto active_vlbs = vlbs_flow.first;
+    auto flow = vlbs_flow.second;
+    assert(valid_flow(network, flow, flow_value, true));
+    return Solution(flow, active_vlbs);
+}
+
 std::vector<Solution*> initial_generation(const Network &network, int generation_size, int flow_value) {
     std::vector<Solution*> generation;
     for (int i = 0; i < generation_size; ++i) {

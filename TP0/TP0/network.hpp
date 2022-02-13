@@ -54,6 +54,7 @@ struct Network {
 
     unsigned int n_outgoing(vertex_key v);
 
+    Network() {}
     Network(unsigned int n_nodes) : n_nodes(n_nodes), source(0), sink(n_nodes-1) {}
 };
 
