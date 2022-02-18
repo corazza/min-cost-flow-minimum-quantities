@@ -1,142 +1,151 @@
-// #include "cplex.hpp"
+#include "cplex.hpp"
+#include "network.hpp"
 
-// double rjesenje_cplex(Network* graf, int flow_value) {
-//     // definicija okruzja za rjesenje
-//     IloEnv CPLEX_okruzje;
-//     IloModel CPLEX_model(CPLEX_okruzje);
+double rjesenje_cplex(Network* graf, int flow_value) {
+    IloEnv CPLEX_okruzje;
+    try {
+        // definicija okruzja za rjesenje
+        IloModel CPLEX_model(CPLEX_okruzje);
 
-//     int br_bridova = 0;
-//     for (std::unordered_map<edge_key, int>::iterator it = graf->costs.begin();
-//         it != graf->costs.end(); ++it)
-//         ++br_bridova;
+        int br_bridova = 0;
+        for (std::unordered_map<edge_key, int>::iterator it = graf->costs.begin();
+            it != graf->costs.end(); ++it)
+            ++br_bridova;
 
-//     IloNumVarArray varijabla_x(CPLEX_okruzje, br_bridova, 0, IloInfinity,
-//         ILOINT);  // funkcija koja bira tok
-//     IloNumVarArray varijabla_y(
-//         CPLEX_okruzje, br_bridova, 0, 1,
-//         ILOINT);  // funkcija koja odreduje je li minimum varijabilan ili fiksan
+        IloNumVarArray varijabla_x(CPLEX_okruzje, br_bridova, 0, IloInfinity,
+            ILOINT);  // funkcija koja bira tok
+        IloNumVarArray varijabla_y(
+            CPLEX_okruzje, br_bridova, 0, 1,
+            ILOINT);  // funkcija koja odreduje je li minimum varijabilan ili fiksan
 
-//     // funkcija cilja
+        // funkcija cilja
 
-//     IloExpr CPLEX_fja_cilja(CPLEX_okruzje);
+        IloExpr CPLEX_fja_cilja(CPLEX_okruzje);
 
-//     int i = 0;
-//     for (std::unordered_map<edge_key, int>::iterator it = graf->costs.begin();
-//         it != graf->costs.end(); ++it) {
+        int i = 0;
+        for (std::unordered_map<edge_key, int>::iterator it = graf->costs.begin();
+            it != graf->costs.end(); ++it) {
 
-//         CPLEX_fja_cilja += it->second * varijabla_x[i];
-//         ++i;
-//     }
+            CPLEX_fja_cilja += it->second * varijabla_x[i];
+            ++i;
+        }
 
-//     CPLEX_model.add(IloMinimize(CPLEX_okruzje, CPLEX_fja_cilja));
+        CPLEX_model.add(IloMinimize(CPLEX_okruzje, CPLEX_fja_cilja));
 
-//     // ogranicenja
+        // ogranicenja
 
-//     IloExpr CPLEX_ogranicenje(CPLEX_okruzje);
+        IloExpr CPLEX_ogranicenje(CPLEX_okruzje);
 
-//     // 2
+        // 2
 
-//     i = 0;
-//     std::pair<vertex_key, vertex_key> par_vrhova;
+        i = 0;
+        std::pair<vertex_key, vertex_key> par_vrhova;
 
-//     for (std::unordered_map<edge_key, int>::iterator it = graf->costs.begin();
-//         it != graf->costs.end(); ++it) {
+        for (std::unordered_map<edge_key, int>::iterator it = graf->costs.begin();
+            it != graf->costs.end(); ++it) {
 
-//         par_vrhova = get_vertex_keys(it->first);
-//         if (par_vrhova.first == 0) CPLEX_ogranicenje += varijabla_x[i];
-//         ++i;
-//     }
+            par_vrhova = get_vertex_keys(it->first);
+            if (par_vrhova.first == 0) CPLEX_ogranicenje += varijabla_x[i];
+            ++i;
+        }
+        //CPLEX_model.add(CPLEX_ogranicenje == (int)flow_value);
+        CPLEX_model.add(CPLEX_ogranicenje <= (int)flow_value);
+        CPLEX_model.add(CPLEX_ogranicenje >= (int)flow_value);
 
-//     CPLEX_model.add(CPLEX_ogranicenje <= (int)flow_value);
-//     CPLEX_model.add(CPLEX_ogranicenje >= (int)flow_value);
+        // 3
 
-//     // 3
+        for (vertex_key pivotni_vrh = 1; pivotni_vrh < graf->sink; ++pivotni_vrh) {
+            CPLEX_ogranicenje -= CPLEX_ogranicenje;
 
-//     for (vertex_key pivotni_vrh = 2; pivotni_vrh < graf->n_nodes; ++pivotni_vrh) {
-//         CPLEX_ogranicenje -= CPLEX_ogranicenje;
+            i = 0;
 
-//         i = 0;
+            for (std::unordered_map<edge_key, int>::iterator it = graf->costs.begin();
+                it != graf->costs.end(); ++it) {
 
-//         for (std::unordered_map<edge_key, int>::iterator it = graf->costs.begin();
-//             it != graf->costs.end(); ++it) {
+                par_vrhova = get_vertex_keys(it->first);
 
-//             par_vrhova = get_vertex_keys(it->first);
+                if (par_vrhova.first == pivotni_vrh)
+                    CPLEX_ogranicenje += varijabla_x[i];
 
-//             if (par_vrhova.first == pivotni_vrh)
-//                 CPLEX_ogranicenje += varijabla_x[i];
+                else if (par_vrhova.second == pivotni_vrh)
+                    CPLEX_ogranicenje -= varijabla_x[i];
 
-//             else if (par_vrhova.second == pivotni_vrh)
-//                 CPLEX_ogranicenje -= varijabla_x[i];
+                ++i;
+            }
+            //CPLEX_model.add(CPLEX_ogranicenje == (int)flow_value);
+            CPLEX_model.add(CPLEX_ogranicenje <= 0);
+            CPLEX_model.add(CPLEX_ogranicenje >= 0);
+        }
 
-//             ++i;
-//         }
+        // 4
 
-//         CPLEX_model.add(CPLEX_ogranicenje <= 0);
-//         CPLEX_model.add(CPLEX_ogranicenje >= 0);
-//     }
+        i = 0;
+        CPLEX_ogranicenje -= CPLEX_ogranicenje;
+        for (std::unordered_map<edge_key, int>::iterator it = graf->costs.begin();
+            it != graf->costs.end(); ++it) {
 
-//     // 4
+            par_vrhova = get_vertex_keys(it->first);
+            if (par_vrhova.second == graf->sink) CPLEX_ogranicenje += varijabla_x[i];
+            ++i;
+        }
+        //CPLEX_model.add(CPLEX_ogranicenje == (int)flow_value);
+        CPLEX_model.add(CPLEX_ogranicenje <= (int)flow_value);
+        CPLEX_model.add(CPLEX_ogranicenje >= (int)flow_value);
 
-//     i = 0;
-//     CPLEX_ogranicenje -= CPLEX_ogranicenje;
+        // 5
 
-//     for (std::unordered_map<edge_key, int>::iterator it = graf->costs.begin();
-//         it != graf->costs.end(); ++it) {
+        i = 0;
+        for (std::unordered_map<edge_key, int>::iterator it = graf->minimum_quantities.begin();
+            it != graf->minimum_quantities.end(); ++it) {
+            CPLEX_ogranicenje -= CPLEX_ogranicenje;
 
-//         par_vrhova = get_vertex_keys(it->first);
-//         if (par_vrhova.second == 1) CPLEX_ogranicenje += varijabla_x[i];
-//         ++i;
-//     }
+            if (graf->vlbs.find(it->first) != graf->vlbs.end()) CPLEX_ogranicenje += varijabla_x[i] - it->second * varijabla_y[i];
+            else CPLEX_ogranicenje += varijabla_x[i] - it->second;
 
-//     CPLEX_model.add(CPLEX_ogranicenje <= (int)flow_value);
-//     CPLEX_model.add(CPLEX_ogranicenje >= (int)flow_value);
+            CPLEX_model.add(CPLEX_ogranicenje >= 0);
 
-//     // 5
+            ++i;
+        }
 
-//     i = 0;
-//     std::unordered_map<edge_key, bool>::iterator varijabilnost = graf->vlb.begin();
-//     for (std::unordered_map<edge_key, int>::iterator it = graf->minimum_quantities.begin();
-//         it != graf->minimum_quantities.end(); ++it) {
+        // 6
 
-//         CPLEX_ogranicenje -= CPLEX_ogranicenje;
+        i = 0;
 
-//         if (varijabilnost->second) CPLEX_ogranicenje += varijabla_x[i] - it->second * varijabla_y[i];
-//         else CPLEX_ogranicenje += varijabla_x[i] - it->second;
+        for (std::unordered_map<edge_key, int>::iterator it = graf->capacities.begin();
+            it != graf->capacities.end(); ++it) {
 
-//         CPLEX_model.add(CPLEX_ogranicenje >= 0);
+            CPLEX_ogranicenje -= CPLEX_ogranicenje;
 
-//         ++i;
-//         ++varijabilnost;
-//     }
+            if (graf->vlbs.find(it->first) != graf->vlbs.end()) CPLEX_ogranicenje += varijabla_x[i] - it->second * varijabla_y[i];
+            else CPLEX_ogranicenje += varijabla_x[i] - it->second;
 
-//     // 6
+            CPLEX_model.add(CPLEX_ogranicenje <= 0);
 
-//     i = 0;
-//     varijabilnost = graf->vlb.begin();
-//     for (std::unordered_map<edge_key, int>::iterator it = graf->capacities.begin();
-//         it != graf->capacities.end(); ++it) {
+            ++i;
+        }
 
-//         CPLEX_ogranicenje -= CPLEX_ogranicenje;
+        // 7 je zadovoljeno modelom
 
-//         if (varijabilnost->second) CPLEX_ogranicenje += varijabla_x[i] - it->second * varijabla_y[i];
-//         else CPLEX_ogranicenje += varijabla_x[i] - it->second;
+        IloCplex CPLEX_rjesenje(CPLEX_model);
+        CPLEX_rjesenje.setOut(CPLEX_okruzje.getNullStream());
+        if (!CPLEX_rjesenje.solve()) {
+            CPLEX_okruzje.error() << "Rjesenje nije pronadeno" << std::endl;
+            return -1;
+        }
 
-//         CPLEX_model.add(CPLEX_ogranicenje <= 0);
+        double CPLEX_vrijednost = CPLEX_rjesenje.getObjValue();
 
-//         ++i;
-//         ++varijabilnost;
-//     }
+        varijabla_x.end();
+        varijabla_y.end();
+        CPLEX_fja_cilja.end();
+        CPLEX_ogranicenje.end();
+        CPLEX_okruzje.end();
 
-//     // 7 je zadovoljeno modelom
-
-//     IloCplex CPLEX_rjesenje(CPLEX_model);
-//     CPLEX_rjesenje.setOut(CPLEX_okruzje.getNullStream());
-//     if (!CPLEX_rjesenje.solve()) {
-//         CPLEX_okruzje.error() << "Rjesenje nije pronadeno" << std::endl;
-//         throw(-1);
-//     }
-
-//     double CPLEX_vrijednost = CPLEX_rjesenje.getObjValue();
-
-//     return CPLEX_vrijednost;
-// }
+        return CPLEX_vrijednost;
+    }
+    catch (IloException& e) {
+        std::cout << "Concert Exception: " << e << std::endl;
+    }
+    CPLEX_okruzje.end();
+    return -1;
+}

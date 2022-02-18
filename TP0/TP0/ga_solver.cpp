@@ -96,7 +96,8 @@ auto select_random(const S &s, size_t n) {
 std::set<edge_key> random_active_vlbs(const Network &network, int up_to_flow_value) {
     std::set<edge_key> active_vlbs;
     std::set<edge_key> available_vlbs = network.vlbs;
-    int num_active_vlbs = rand() % available_vlbs.size();
+    int num_active_vlbs = 0;
+    if(available_vlbs.size() != 0) num_active_vlbs = rand() % available_vlbs.size();
     int added = 0;
 
     while (available_vlbs.size() > 0 && active_vlbs.size() < num_active_vlbs && added < up_to_flow_value) {
