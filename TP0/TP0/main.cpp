@@ -4,10 +4,10 @@
 #include <chrono>
 #include "ga_solver.hpp"
 
-/*
+
 int main() {
     int nodes;
-    
+    /*
     nodes = 4;
     Network graf(nodes);
     graf.add_edge(0, 1, 10, 4, 2, true);
@@ -15,10 +15,10 @@ int main() {
     graf.add_edge(1, 3, 10, 3, 2, true);
     graf.add_edge(1, 2, 1, 7, 1, true);
     graf.add_edge(2, 3, 3, 4, 1, true);
-    
+    */
     
     GeneratorParameters p;
-    p.n_nodes = nodes = 5;
+    p.n_nodes = nodes = 800;
     p.max_span_q = p.n_nodes / 2;
     p.inclusion_p = 0.5;
     p.vlb_p = 0.5;
@@ -44,4 +44,3 @@ int main() {
 	return 0;
 }
 
-*/

@@ -12,7 +12,7 @@ using json = nlohmann::json;
 #include "ga_solver.hpp"
 #include "util.hpp"
 #include "cplex.hpp"
-int main() {
+/*int main() {
     std::srand(time(NULL));
 
     std::ifstream i_params("generator_parameters.json");
@@ -39,7 +39,7 @@ int main() {
     // auto last_generation = ga_solver(network, sp, 1);
     std::cout << "lowest cost: " << best_solution.cost << std::endl;
     std::cout << "time taken to calculate: " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << "(s)" << std::endl;
-    /*
+    
     start = std::chrono::high_resolution_clock::now();
     double cplex_solution = rjesenje_cplex(&network, sp.flow_value);
     end = std::chrono::high_resolution_clock::now();
@@ -48,5 +48,5 @@ int main() {
     else
         std::cout << "cplex solution is: " << cplex_solution << std::endl;
 
-    std::cout << "time taken to calculate: " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << "(s)" << std::endl;*/
-}
+    std::cout << "time taken to calculate: " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << "(s)" << std::endl;
+}*/
