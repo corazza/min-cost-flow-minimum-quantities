@@ -92,3 +92,4 @@ network = read_network(network_path)
 solution = read_solution(solution_path)
 G = build_graph(network, solution)
 draw_graph(network, solution, G)
+

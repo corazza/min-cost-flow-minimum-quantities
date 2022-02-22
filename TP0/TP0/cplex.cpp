@@ -1,7 +1,7 @@
 #include "cplex.hpp"
 #include "network.hpp"
 
-double rjesenje_cplex(Network* graf, int flow_value) {
+double rjesenje_cplex(Network* graf, int flow_value, Flow* flow, std::set<edge_key>* variable_bounds) {
     IloEnv CPLEX_okruzje;
     try {
         // definicija okruzja za rjesenje
@@ -180,6 +180,15 @@ double rjesenje_cplex(Network* graf, int flow_value) {
         }
         std::cout << "CPLEX zapisao ogranicenja, krece racun" << std::endl;
         double CPLEX_vrijednost = CPLEX_rjesenje.getObjValue();
+
+        int l = 0;
+        
+        for (auto it = graf->costs.begin(); it != graf->costs.end(); ++it) {
+            vertex_key prvi = get_vertex_keys(it->first).first, drugi = get_vertex_keys(it->first).second;
+            flow->add_edge(prvi, drugi, CPLEX_rjesenje.getValue(varijabla_x[l]));
+            if (CPLEX_rjesenje.getValue(varijabla_y[l]) == 1) variable_bounds->insert(it->first);
+            ++l;
+        }
 
         varijabla_x.end();
         varijabla_y.end();
