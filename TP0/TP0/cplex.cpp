@@ -182,7 +182,7 @@ double rjesenje_cplex(Network* graf, int flow_value, Flow* flow, std::set<edge_k
         double CPLEX_vrijednost = CPLEX_rjesenje.getObjValue();
 
         int l = 0;
-        
+        std::cout << varijabla_y << std::endl;
         for (auto it = graf->costs.begin(); it != graf->costs.end(); ++it) {
             vertex_key prvi = get_vertex_keys(it->first).first, drugi = get_vertex_keys(it->first).second;
             flow->add_edge(prvi, drugi, CPLEX_rjesenje.getValue(varijabla_x[l]));

@@ -16,11 +16,12 @@ int main() {
     graf.add_edge(1, 2, 1, 7, 1, true);
     graf.add_edge(2, 3, 3, 4, 1, true);
     */
+    int flow_value = 10;
     
     GeneratorParameters p;
-    p.n_nodes = nodes = 25;
+    p.n_nodes = 5;
     p.max_span_q = p.n_nodes / 2;
-    p.inclusion_p = 0.5;
+    p.inclusion_p = 1;
     p.vlb_p = 0.5;
     p.cost_max = 20;
     p.alpha_1 = 4;
@@ -40,7 +41,7 @@ int main() {
 
     Flow flow(0, graf.sink);
     std::set<edge_key> variable_bounds;
-	double vrijeme_cplex = rjesenje_cplex(&graf, nodes, &flow, &variable_bounds);
+	double vrijeme_cplex = rjesenje_cplex(&graf, flow_value, &flow, &variable_bounds);
 
     Solution solution(flow, variable_bounds);
     json j_solution = solution; 
