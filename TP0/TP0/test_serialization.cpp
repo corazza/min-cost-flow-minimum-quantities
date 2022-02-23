@@ -13,13 +13,13 @@ using json = nlohmann::json;
 int main() {
     std::srand(time(NULL));
 
-    std::ifstream i_generator_params("generator_parameters.json");
+    std::ifstream i_generator_params("generator_parameters_test.json");
     json j_generator_params;
     i_generator_params >> j_generator_params;
     i_generator_params.close();
     GeneratorParameters p = j_generator_params.get<GeneratorParameters>();
 
-    std::ifstream i_solver_params("solver_parameters.json");
+    std::ifstream i_solver_params("solver_parameters_test.json");
     json j_solver_params;
     i_solver_params >> j_solver_params;
     i_solver_params.close();
