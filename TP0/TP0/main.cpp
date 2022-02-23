@@ -19,9 +19,9 @@ int main() {
     int flow_value = 10;
     
     GeneratorParameters p;
-    p.n_nodes = 5;
+    p.n_nodes = 15;
     p.max_span_q = p.n_nodes / 2;
-    p.inclusion_p = 1;
+    p.inclusion_p = 0.5;
     p.vlb_p = 0.5;
     p.cost_max = 20;
     p.alpha_1 = 4;
@@ -30,7 +30,6 @@ int main() {
     p.alpha_4 = 10;
     
     Network graf = generate_instance(p);
-    
 
     json j_network = graf; // Network network = ...;
     std::ofstream o_network("output_network.json");
@@ -40,8 +39,10 @@ int main() {
 	auto pocetak = std::chrono::high_resolution_clock::now();
 
     Flow flow(0, graf.sink);
-    std::set<edge_key> variable_bounds;
-	double vrijeme_cplex = rjesenje_cplex(&graf, flow_value, &flow, &variable_bounds);
+    
+	double vrijeme_cplex = rjesenje_cplex(&graf, flow_value, &flow);
+
+    std::set<edge_key> variable_bounds = graf.detect_wannabe_active_vlbs(flow);
 
     Solution solution(flow, variable_bounds);
     json j_solution = solution; 
