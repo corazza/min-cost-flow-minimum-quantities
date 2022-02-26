@@ -48,7 +48,7 @@ Network graf = generate_instance(p);
 std::cout << "n_edges: " << graf.n_edges() << std::endl;
 
 json j_network = graf; // Network network = ...;
-std::ofstream o_network("cplex_output_network.json");
+std::ofstream o_network("output_network.json");
 o_network << std::setw(4) << j_network << std::endl;
 o_network.close();
 
@@ -60,20 +60,21 @@ double vrijeme_cplex = rjesenje_cplex(&graf, p.flow_value, &flow);
 
 std::set<edge_key> variable_bounds = graf.detect_wannabe_active_vlbs(flow);
 
-Solution solution(flow, variable_bounds);
-json j_solution = solution;
-std::ofstream o_flow("cplex_output_solution.json");
-o_flow << std::setw(4) << j_solution << std::endl;
-o_flow.close();
-
 auto kraj = std::chrono::high_resolution_clock::now();
 auto vrijeme = std::chrono::duration_cast<std::chrono::seconds>(kraj - pocetak);
 
 std::cout << "Rjesenje dobiveno cplexom: " << vrijeme_cplex << ", dobiveno u vremenu: " << vrijeme.count() << " s" << std::endl;
 
 auto start = std::chrono::high_resolution_clock::now();
-auto best_solution_steps = ga_solver(graf, sp, sp.num_steps / 1000);
+auto best_solution_steps = ga_solver(graf, sp, sp.num_steps / 100);
 Solution best_solution = best_solution_steps.first;
+
+Solution solution(flow, variable_bounds);
+json j_solution = solution;
+std::ofstream o_flow("output_solution.json");
+o_flow << std::setw(4) << j_solution << std::endl;
+o_flow.close();
+
 auto steps = best_solution_steps.second;
 std::cout << "steps: " << steps.size() << std::endl;
 auto end = std::chrono::high_resolution_clock::now();
