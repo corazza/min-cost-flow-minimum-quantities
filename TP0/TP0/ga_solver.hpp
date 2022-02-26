@@ -11,10 +11,9 @@ struct SolverParameters {
     int num_steps;
     int flow_value;
     int best_of;
-    int elitism;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SolverParameters, num_perturbations, generation_size, num_steps, flow_value, best_of, elitism);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SolverParameters, num_perturbations, generation_size, num_steps, flow_value, best_of);
 
 struct Solution {
     Flow flow;

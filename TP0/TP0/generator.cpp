@@ -8,6 +8,7 @@
 
 Network generate_instance(GeneratorParameters p) {
     Network network(p.n_nodes);
+    network.max_span_q = p.max_span_q;
 
     assert(network.source == 0 && network.sink == network.n_nodes - 1);
     assert(p.alpha_3 > p.alpha_1 + p.alpha_2);
@@ -33,6 +34,8 @@ Network generate_instance(GeneratorParameters p) {
             network.add_edge(i, j, cost, capacity, minimum_quantity, vlb);
         }
     }
+
+    network.vectorize();
 
     return network;
 }

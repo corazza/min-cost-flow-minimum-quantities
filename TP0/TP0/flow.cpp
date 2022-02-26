@@ -2,11 +2,13 @@
 #include <cassert>
 
 #include "flow.hpp"
+#include "util.hpp"
 
 void Flow::empty_flow() {
     this->values.clear();
     this->outgoing.clear();
     this->incoming.clear();
+    // vectorize();
 }
 
 int Flow::edge_value(vertex_key v_from, vertex_key v_to) const {
@@ -16,7 +18,6 @@ int Flow::edge_value(vertex_key v_from, vertex_key v_to) const {
 }
 
 int Flow::edge_value(edge_key edge) const {
-
     if (this->values.find(edge) == this->values.end()) {
         return 0;
     } else {
@@ -24,34 +25,52 @@ int Flow::edge_value(edge_key edge) const {
     }
 }
 
+// void Flow::vectorize() {
+//     v_values.resize(n_nodes, std::vector<int>(n_nodes, 0));
+
+//     for (int i = 0; i < n_nodes; ++i) {
+//         int k = min(i+max_span_q, n_nodes);
+//         for (int j = i+1; j < k; ++j) {
+//             edge_key edge = get_edge_key(i, j);
+//             v_values[i][j] = edge_value(edge);
+//         }
+//     }
+
+//     vectorized = true;
+// }
+
 int Flow::incoming_value(vertex_key v_to) const {
+    // assert(vectorized);
     if (this->incoming.find(v_to) == this->incoming.end()) {
         return 0;
     }
     int incoming_sum = 0;
     for (auto v_from : this->incoming.at(v_to)) {
         incoming_sum += this->edge_value(v_from, v_to);
+        // incoming_sum += v_values[v_from][v_to];
     }
     return incoming_sum;
 }
 
 int Flow::outgoing_value(vertex_key v_from) const {
+    // assert(vectorized);
     if (this->outgoing.find(v_from) == this->outgoing.end()) {
         return 0;
     }
     int outgoing_sum = 0;
     for (auto v_to : this->outgoing.at(v_from)) {
         outgoing_sum += this->edge_value(v_from, v_to);
+        // outgoing_sum += v_values[v_from][v_to];
     }
     return outgoing_sum;
 }
 
-int Flow::vertex_value(vertex_key v_from) const {
-    int incoming_value = this->incoming_value(v_from);
-    int outgoing_value = this->outgoing_value(v_from);
-    assert(incoming_value == outgoing_value);
-    return incoming_value;
-}
+// int Flow::vertex_value(vertex_key v_from) const {
+//     int incoming_value = this->incoming_value(v_from);
+//     int outgoing_value = this->outgoing_value(v_from);
+//     assert(incoming_value == outgoing_value);
+//     return incoming_value;
+// }
 
 bool Flow::exists_edge(const edge_key& edge) {
     if (this->values.find(edge) == this->values.end()) {
@@ -88,11 +107,14 @@ void Flow::print() const {
 }
 
 Flow Flow::make_copy() const {
-    Flow result(this->source, this->sink);
+    Flow result(source, sink, n_nodes, max_span_q);
 
     result.values = this->values;
     result.outgoing = this->outgoing;
     result.incoming = this->incoming;
+    // result.v_values = v_values;
+    // result.vectorized = vectorized;
+    result.max_span_q = max_span_q;
 
     return result;
 }
@@ -110,7 +132,16 @@ void Flow::add_edge(vertex_key v_from, vertex_key v_to, int value) {
     assert(!this->exists_edge(edge));
 
     this->values[edge] = value;
+    // if (vectorized) {
+    //     v_values[v_from][v_to] = value;
+    // }
 
+    this->outgoing[v_from].insert(v_to);
+    this->incoming[v_to].insert(v_from);
+}
+
+void Flow::ensure_edge(vertex_key v_from, vertex_key v_to) {
+    assert(v_from != v_to);
     this->outgoing[v_from].insert(v_to);
     this->incoming[v_to].insert(v_from);
 }
@@ -119,6 +150,10 @@ int Flow::remove_edge(vertex_key v_from, vertex_key v_to) {
     assert(v_from != v_to);
     edge_key edge = get_edge_key((vertex_key)v_from, (vertex_key)v_to);
     assert(this->exists_edge(edge));
+
+    // if (vectorized) {
+    //     v_values[v_from][v_to] = 0;
+    // }
 
     if (this->values.find(edge) == this->values.end() || this->values[edge] == 0) {
         return 0;
@@ -138,6 +173,9 @@ void Flow::add_to_edge(vertex_key v_from, vertex_key v_to, int value) {
         this->add_edge(v_from, v_to, value);
     } else {
         this->values[edge] += value;
+        // if (vectorized) {
+        //     v_values[v_from][v_to] += value;
+        // }
     }
 }
 
@@ -147,6 +185,9 @@ void Flow::subtract_from_edge(vertex_key v_from, vertex_key v_to, int value) {
     if (this->exists_edge(edge)) {
         if (this->values[edge] > value) {
             this->values[edge] -= value;
+            // if (vectorized) {
+            //     v_values[v_from][v_to] -= value;
+            // }
         }
         else {
             this->remove_edge(v_from, v_to);

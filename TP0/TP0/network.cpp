@@ -1,4 +1,5 @@
 #include "network.hpp"
+#include "util.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -9,6 +10,7 @@
 void Network::add_edge(vertex_key v_from, vertex_key v_to, int cost, int capacity,
                        int minimum_quantity, bool vlb) {
     assert(v_from != v_to);
+    assert(!vectorized);
     edge_key edge = get_edge_key((vertex_key)v_from, (vertex_key)v_to);
 
     this->costs[edge] = cost;
@@ -24,6 +26,7 @@ void Network::add_edge(vertex_key v_from, vertex_key v_to, int cost, int capacit
 
 void Network::remove_edge(vertex_key v_from, vertex_key v_to) {
     assert(!"FlowNetwork::remove_edge unimplemented!");
+    assert(!vectorized);
 }
 
 int Network::capacity(vertex_key v_from, vertex_key v_to) const {
@@ -33,6 +36,48 @@ int Network::capacity(vertex_key v_from, vertex_key v_to) const {
     } else {
         return this->capacities.at(edge);
     }
+}
+
+int Network::cost(vertex_key v_from, vertex_key v_to) const {
+    edge_key edge = get_edge_key((vertex_key)v_from, (vertex_key)v_to);
+    if (this->costs.find(edge) == this->costs.end()) {
+        return 0;
+    } else {
+        return this->costs.at(edge);
+    }
+}
+
+int Network::minimum_quantity(vertex_key v_from, vertex_key v_to) const {
+    edge_key edge = get_edge_key((vertex_key)v_from, (vertex_key)v_to);
+    if (minimum_quantities.find(edge) == minimum_quantities.end()) {
+        return 0;
+    } else {
+        return minimum_quantities.at(edge);
+    }
+}
+
+void Network::vectorize() {
+    v_costs.resize(n_nodes, std::vector<int>(n_nodes, 0));
+    v_capacities.resize(n_nodes, std::vector<int>(n_nodes, 0));
+    v_minimum_quantities.resize(n_nodes, std::vector<int>(n_nodes, 0));
+    v_vlbs.resize(n_nodes, std::vector<bool>(n_nodes, false));
+
+    for (int i = 0; i < n_nodes; ++i) {
+        int k = min(i+max_span_q, n_nodes);
+        for (int j = i+1; j < k; ++j) {
+            edge_key edge = get_edge_key(i, j);
+            v_costs[i][j] = cost(i, j);
+            v_capacities[i][j] = capacity(i, j);
+            v_minimum_quantities[i][j] = minimum_quantity(i, j);
+        }
+    }
+
+    for (auto edge : vlbs) {
+        auto vertices = get_vertex_keys(edge);
+        v_vlbs[vertices.first][vertices.second] = true;
+    }
+
+    this->vectorized = true;
 }
 
 unsigned int Network::n_outgoing(vertex_key v) {

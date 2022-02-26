@@ -11,7 +11,7 @@
 #include <algorithm>
 
 
-std::vector<vertex_key> find_random_augmenting_path(const Network &network, Flow &flow, std::set<edge_key> active_vlbs, vertex_key v_start, vertex_key v_end, int value, bool ignore_active_vlbs, bool ignore_inactive_vlbs) {
+std::vector<vertex_key> find_random_augmenting_path(const Network &network, Flow &flow, std::set<edge_key> &active_vlbs, vertex_key v_start, vertex_key v_end, int value, bool ignore_active_vlbs, bool ignore_inactive_vlbs) {
     assert(network.exists_path(v_start, v_end));
     std::set<vertex_key> blacklisted;
     std::unordered_map<vertex_key, vertex_key> parents;
@@ -26,14 +26,17 @@ std::vector<vertex_key> find_random_augmenting_path(const Network &network, Flow
                     continue;
                 }
                 auto edge = get_edge_key(visiting, neighbor);
-                bool is_vlb = network.vlbs.find(edge) != network.vlbs.end();
+                // bool is_vlb = network.vlbs.find(edge) != network.vlbs.end();
+                bool is_vlb = network.v_vlbs[visiting][neighbor];
                 bool is_active_vlb = active_vlbs.find(edge) != active_vlbs.end();
                 assert(!is_active_vlb || is_vlb);
-                int minimum_quantity = network.minimum_quantities.at(edge);
+                // int minimum_quantity = network.minimum_quantities.at(edge);
+                int minimum_quantity = network.v_minimum_quantities[visiting][neighbor];
                 int current_value = flow.edge_value(visiting, neighbor);
+                // int current_value = flow.v_values[visiting][neighbor];
                 int new_value = current_value + value;
 
-                bool within_bounds = new_value <= network.capacity(visiting, neighbor);
+                bool within_bounds = new_value <= network.v_capacities[visiting][neighbor];
                 within_bounds &= new_value >= 0;
 
                 if (is_active_vlb) {
@@ -81,6 +84,8 @@ void apply_augmenting_path(const Network &network, Flow &flow, std::set<edge_key
         vertex_key next_vertex = path[i];
         edge_key edge = get_edge_key(current_vertex, next_vertex);
         flow.add_to_edge(current_vertex, next_vertex, value);
+        // flow.ensure_edge(current_vertex, next_vertex);
+        // flow.v_values[current_vertex][next_vertex] += value;
         current_vertex = next_vertex;
     }
 }
@@ -113,7 +118,8 @@ std::set<edge_key> random_active_vlbs(const Network &network, int up_to_flow_val
             continue;
         }
 
-        int minimum_quantity = network.minimum_quantities.at(edge);
+        // int minimum_quantity = network.minimum_quantities.at(edge);
+        int minimum_quantity = network.v_minimum_quantities[v_from][v_to];
         added += minimum_quantity;
         if (added <= up_to_flow_value) {
             active_vlbs.insert(edge);
@@ -126,16 +132,19 @@ std::set<edge_key> random_active_vlbs(const Network &network, int up_to_flow_val
 // should be called before fix_flow_value
 Flow fix_active_vlbs(const Network &network, const Flow &original, std::set<edge_key> active_vlbs) {
     Flow flow = original.make_copy();
+    // std::cout << "+ here 1" << std::endl;
 
     for (auto edge : active_vlbs) {
-        int minimum_quantity = network.minimum_quantities.at(edge);
+        // int minimum_quantity = network.minimum_quantities.at(edge);
         auto vertices = get_vertex_keys(edge);
         vertex_key v_from = vertices.first;
         vertex_key v_to = vertices.second;
+        int minimum_quantity = network.v_minimum_quantities[v_from][v_to];
 
         assert(network.exists_path(network.source, v_from));
         assert(network.exists_path(v_to, network.sink));
         int current_value = flow.edge_value(v_from, v_to);
+        // int current_value = flow.v_values[v_from][v_to];
         int debt = minimum_quantity - current_value;
         for (int i = 0; i < debt; ++i) {
             std::vector<vertex_key> source_to_v_from = find_random_augmenting_path(network, flow, active_vlbs, network.source, v_from, 1, true, false);
@@ -143,8 +152,11 @@ Flow fix_active_vlbs(const Network &network, const Flow &original, std::set<edge
             std::vector<vertex_key> v_to_to_sink = find_random_augmenting_path(network, flow, active_vlbs, v_to, network.sink, 1, true, false);
             apply_augmenting_path(network, flow, active_vlbs, v_to_to_sink, 1);
             flow.add_to_edge(v_from, v_to, 1);
+            // flow.ensure_edge(v_from, v_to);
+            // flow.v_values[v_from][v_to] += 1;
         }
     }
+    // std::cout << "+ here 2" << std::endl;
     assert(flow.respects_flow_conservation());
     return flow;
 }
@@ -161,6 +173,7 @@ Flow fix_inactive_vlbs(const Network &network, const Flow &original, std::set<ed
         vertex_key v_from = vertices.first;
         vertex_key v_to = vertices.second;
         int current_value = flow.edge_value(v_from, v_to);
+        // int current_value = flow.v_values[v_from][v_to];
         int debt = current_value;
         for (int i = 0; i < debt; ++i) {
             std::vector<vertex_key> source_to_v_from = find_random_augmenting_path(network, flow, active_vlbs, network.source, v_from, -1, false, true);
@@ -168,6 +181,8 @@ Flow fix_inactive_vlbs(const Network &network, const Flow &original, std::set<ed
             std::vector<vertex_key> v_to_to_sink = find_random_augmenting_path(network, flow, active_vlbs, v_to, network.sink, -1, false, true);
             apply_augmenting_path(network, flow, active_vlbs, v_to_to_sink, -1);
             flow.add_to_edge(v_from, v_to, -1);
+            // flow.ensure_edge(v_from, v_to);
+            // flow.v_values[v_from][v_to] -= 1;
         }
     }
     assert(flow.respects_flow_conservation());
@@ -202,10 +217,16 @@ Flow fix_flow_value(const Network &network, const Flow &original, std::set<edge_
 
 // main function that generates a random admissible flow, can throw an exception
 Flow random_admissible_flow_throws(const Network &network, int flow_value, std::set<edge_key> active_vlbs) {
-    Flow flow(network.source, network.sink);
+    Flow flow(network.source, network.sink, network.n_nodes, network.max_span_q);
+    // std::cout << "here 1, " << active_vlbs.size() << std::endl;
+    // flow.vectorize();
+    // std::cout << "here 2" << std::endl;
     flow = fix_active_vlbs(network, flow, active_vlbs);
+    // std::cout << "here 3" << std::endl;
     flow = fix_inactive_vlbs(network, flow, active_vlbs);
+    // std::cout << "here 4" << std::endl;
     flow = fix_flow_value(network, flow, active_vlbs, flow_value);
+    // std::cout << "here 5" << std::endl;
     assert(flow.respects_flow_conservation());
     assert(flow.flow_value() == flow_value);
     assert(network.respects_bounds(flow, false));
@@ -213,19 +234,24 @@ Flow random_admissible_flow_throws(const Network &network, int flow_value, std::
 }
 
 // TODO FIXME is the reason it's necessary to try/catch because the network can have dead-end active vlbs?
-std::pair<std::set<edge_key>, Flow> random_admissible_flow(const Network &network, int flow_value, int up_to_value) {
+std::pair<std::set<edge_key>, Flow> random_admissible_flow(const Network &network, int flow_value, int up_to_value, std::set<std::set<edge_key > > &tried_active_vlbs) {
     int attempts = 0;
     while (true) {
         ++attempts;
         try {
             std::set<edge_key> active_vlbs = random_active_vlbs(network, up_to_value);
+            // if (tried_active_vlbs.find(active_vlbs) != tried_active_vlbs.end()) {
+            //     std::cout << "HIT FOUND" << std::endl;
+            //     continue;
+            // }
+            // tried_active_vlbs.insert(active_vlbs);
             Flow flow = random_admissible_flow_throws(network, flow_value, active_vlbs);
             // if (attempts > 1) {
             //     std::cout << "took " << attempts << " attempts" << std::endl;
             // }
             return std::make_pair(active_vlbs, flow);
         } catch(const char* msg) {
-            
+            // std::cout << "attempts: " << attempts << ", tried_active_vlbs.size()=" << tried_active_vlbs.size() << std::endl;
         }
     }
 }
@@ -236,8 +262,11 @@ std::unordered_map<edge_key, float> compute_new_active_vlbs_p_map(const Network 
     auto wannabe_vlbs = network.detect_wannabe_active_vlbs(flow);
     std::unordered_map<edge_key, float> p_map;
     for (auto edge : wannabe_vlbs) {
-        int minimum_quantity = network.minimum_quantities.at(edge);
+        // int minimum_quantity = network.minimum_quantities.at(edge);
         int current_value = flow.edge_value(edge);
+        auto vertices = get_vertex_keys(edge);
+        int minimum_quantity = network.v_minimum_quantities[vertices.first][vertices.second];
+        // int current_value = flow.v_values[vertices.first][vertices.second];
         float p = (float) current_value / (float) minimum_quantity; // no need for cutoff above 1
         p_map[edge] = p;
     }
@@ -276,7 +305,7 @@ std::pair<std::set<edge_key>, Flow> mutate_throws(const Network &network, const 
         std::vector<vertex_key> source_to_v_from = find_random_augmenting_path(network, flow, original_active_vlbs, network.source, network.sink, -1, true, true);
         apply_augmenting_path(network, flow, original_active_vlbs, source_to_v_from, -1);
         std::vector<vertex_key> v_to_to_sink = find_random_augmenting_path(network, flow, original_active_vlbs, network.source, network.sink, 1, true, true);
-        apply_augmenting_path(network, flow, original_active_vlbs, v_to_to_sink, 1);        
+        apply_augmenting_path(network, flow, original_active_vlbs, v_to_to_sink, 1);
     }
 
     auto vlbs_p_map = compute_new_active_vlbs_p_map(network, flow);
@@ -321,6 +350,7 @@ std::vector<Flow> decompose(const Flow &f, const Network &network) {
             visited.insert(visiting);
             for (auto next_vertex : flow_copy.outgoing[visiting]) {
                 if (visited.find(next_vertex) != visited.end() || flow_copy.edge_value(visiting, next_vertex) < 1) {
+                // if (visited.find(next_vertex) != visited.end() || flow_copy.v_values[visiting][next_vertex] < 1) {
                     continue;
                 }
                 to_visit.push(next_vertex);
@@ -331,7 +361,7 @@ std::vector<Flow> decompose(const Flow &f, const Network &network) {
                 }
             }
         }
-        Flow unitary_flow(network.source, network.sink);
+        Flow unitary_flow(network.source, network.sink, network.n_nodes, network.max_span_q);
         vertex_key current_vertex = network.sink;
         while (current_vertex != network.source) {
             vertex_key parent = unitary_path_parents[current_vertex];
@@ -382,7 +412,7 @@ bool valid_flow(const Network &network, const Flow &flow, int flow_value, bool r
     return respects_flow_conservation && correct_value && respects_bounds;
 }
 
-// picks a random 
+// picks a random
 std::set<edge_key> joint_random_decom_vlbs(const Network &network, std::vector<Flow> &decom1, std::vector<Flow> &decom2) {
     auto decom1_vlbs = decomp_vlbs(network, decom1);
     auto decom2_vlbs = decomp_vlbs(network, decom2);
@@ -413,8 +443,10 @@ Flow compose_throws(std::vector<Flow> &decom1, std::vector<Flow> &decom2, std::s
     int decomposition_size = decom1.size();
     assert(decomposition_size == decom2.size());
     assert(flow_value == decomposition_size);
-    Flow new_flow(network.source, network.sink);  // by not testing every pair combination of decom1 and decom2, but decom1.size() pairs
-    Flow tmp(network.source, network.sink);  // alternative would be to implement
+    Flow new_flow(network.source, network.sink, network.n_nodes, network.max_span_q);  // by not testing every pair combination of decom1 and decom2, but decom1.size() pairs
+    // new_flow.vectorize();
+    Flow tmp(network.source, network.sink, network.n_nodes, network.max_span_q);  // alternative would be to implement
+    // tmp.vectorize();
 
     std::set<int> available1; // stores available indices into decom1
     std::set<int> available2; // this avoids the need to resize decom1, decom2 in each step (set operations are O(1) in contrast to vector)
@@ -527,6 +559,7 @@ std::pair<std::set<edge_key>, Flow> crossover(const Network &network, Flow &f1, 
     assert(decomposition_size == decomposed2.size());
     assert(flow_value == decomposition_size);
     auto recomposed = compose(decomposed1, decomposed2, flow_value, network);
+    // recomposed.second.vectorize();
     assert(valid_flow(network, recomposed.second, flow_value, true));
     return recomposed;
 }
@@ -577,7 +610,8 @@ int cost(const Network &network, const Flow &flow) {
 }
 
 Solution random_solution(const Network &network, int flow_value) {
-    auto vlbs_flow = random_admissible_flow(network, flow_value, flow_value / 2);
+    std::set<std::set<edge_key > > tried_active_vlbs;
+    auto vlbs_flow = random_admissible_flow(network, flow_value, flow_value / 2, tried_active_vlbs);
     auto active_vlbs = vlbs_flow.first;
     auto flow = vlbs_flow.second;
     assert(valid_flow(network, flow, flow_value, true));
@@ -586,8 +620,10 @@ Solution random_solution(const Network &network, int flow_value) {
 
 std::vector<Solution*> initial_generation(const Network &network, int generation_size, int flow_value) {
     std::vector<Solution*> generation;
+    std::set<std::set<edge_key > > tried_active_vlbs;
     for (int i = 0; i < generation_size; ++i) {
-        auto vlbs_flow = random_admissible_flow(network, flow_value, flow_value / 2);
+        std::cout << i << std::endl;
+        auto vlbs_flow = random_admissible_flow(network, flow_value, flow_value / 2, tried_active_vlbs);
         auto active_vlbs = vlbs_flow.first;
         auto flow = vlbs_flow.second;
         assert(valid_flow(network, flow, flow_value, true));
@@ -624,7 +660,7 @@ void replace_in_generation(std::vector<Solution*> &generation, Solution *solutio
 
 void replace_first_worse_or_last(const Network &network, Solution *solution, std::vector<Solution*> &generation) {
     int i;
-    for (i = 0; i < generation.size() && solution->cost > generation[i]->cost; ++i) {}
+    for (i = 0; i < generation.size() - 1 && solution->cost > generation[i]->cost; ++i) {}
     replace_in_generation(generation, solution, i);
 }
 // TODO replace_similar?

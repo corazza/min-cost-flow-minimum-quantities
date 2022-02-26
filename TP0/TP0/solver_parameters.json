@@ -1,8 +1,7 @@
 {
     "best_of": 3,
-    "elitism": 32767,
-    "flow_value": 10,
-    "generation_size": 100,
+    "flow_value": 50,
+    "generation_size": 1000,
     "num_perturbations": 2,
     "num_steps": 10000
 }
