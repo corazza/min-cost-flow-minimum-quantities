@@ -21,7 +21,7 @@ class App(tk.Tk):
 
         # Main interface setup
         self.title('Network traversal')
-        self.geometry('800x600')
+        self.geometry('800x1000')
         ############################
 
         # Window label
