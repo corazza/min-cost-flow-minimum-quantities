@@ -1,7 +1,7 @@
 {
     "best_of": 3,
-    "flow_value": 50,
-    "generation_size": 1000,
+    "flow_value": 30,
+    "generation_size": 10,
     "num_perturbations": 2,
-    "num_steps": 10000
+    "num_steps": 1000
 }

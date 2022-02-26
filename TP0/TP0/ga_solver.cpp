@@ -622,7 +622,6 @@ std::vector<Solution*> initial_generation(const Network &network, int generation
     std::vector<Solution*> generation;
     std::set<std::set<edge_key > > tried_active_vlbs;
     for (int i = 0; i < generation_size; ++i) {
-        std::cout << i << std::endl;
         auto vlbs_flow = random_admissible_flow(network, flow_value, flow_value / 2, tried_active_vlbs);
         auto active_vlbs = vlbs_flow.first;
         auto flow = vlbs_flow.second;
@@ -677,7 +676,10 @@ bool compare(Solution* a, Solution* b) {
     return a->cost < b->cost;
 }
 
-Solution ga_solver(const Network &network, const SolverParameters &sp, int report_every) {
+std::pair<Solution, std::vector<std::pair<int, int> > > ga_solver(const Network &network, const SolverParameters &sp, int report_every) {
+    std::vector<std::pair<int, int> > steps;
+    int store_every = 10;
+
     int num_steps = sp.num_steps;
     int generation_size = sp.generation_size;
     int flow_value = sp.flow_value;
@@ -697,6 +699,10 @@ Solution ga_solver(const Network &network, const SolverParameters &sp, int repor
                 std::cout << "step " << i << "/" << num_steps << ", best cost: " << best_solution.cost << ", best in generation: " << current_generation[0]->cost << std::endl;
             }
         }
+        if (i % store_every == 0) {
+            auto i_score = std::make_pair(i, best_solution.cost);
+            steps.push_back(i_score);
+        }
         int first_parent = pick_best_of(sp.best_of, generation_size);
         int second_parent = pick_best_of(sp.best_of, generation_size);
         auto child_vlbs_flow = crossover(network, current_generation[first_parent]->flow, current_generation[second_parent]->flow, flow_value);
@@ -706,5 +712,5 @@ Solution ga_solver(const Network &network, const SolverParameters &sp, int repor
         mutate_random(network, current_generation, sp.num_perturbations);
     }
 
-    return best_solution;
+    return std::make_pair(best_solution, steps);
 }

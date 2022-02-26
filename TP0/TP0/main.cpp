@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "results.hpp"
 
 int main() {
     int nodes;
@@ -71,11 +72,21 @@ auto vrijeme = std::chrono::duration_cast<std::chrono::seconds>(kraj - pocetak);
 std::cout << "Rjesenje dobiveno cplexom: " << vrijeme_cplex << ", dobiveno u vremenu: " << vrijeme.count() << " s" << std::endl;
 
 auto start = std::chrono::high_resolution_clock::now();
-auto best_solution = ga_solver(graf, sp, sp.num_steps / 1000);
+auto best_solution_steps = ga_solver(graf, sp, sp.num_steps / 1000);
+Solution best_solution = best_solution_steps.first;
+auto steps = best_solution_steps.second;
+std::cout << "steps: " << steps.size() << std::endl;
 auto end = std::chrono::high_resolution_clock::now();
 
 std::cout << "lowest cost: " << best_solution.cost << std::endl;
 std::cout << "time taken to calculate: " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << "(s)" << std::endl;
+
+Results results(best_solution, steps, vrijeme_cplex, sp, p);
+
+json j_results = results;
+std::ofstream o_steps("results.json");
+o_steps << std::setw(4) << j_results << std::endl;
+o_steps.close();
 
 return 0;
 }

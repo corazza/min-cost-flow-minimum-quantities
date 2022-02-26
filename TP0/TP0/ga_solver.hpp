@@ -38,7 +38,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Solution, flow, active_vlbs, cost);
 // std::pair<std::set<edge_key>, Flow> mutate(const Network &network, const Flow &original, std::set<edge_key> active_vlbs, int num_perturbations);
 // std::pair<std::set<edge_key>, Flow> crossover(const Network &network, Flow &f1, Flow &f2);
 Solution random_solution(const Network &network, int flow_value);
-Solution ga_solver(const Network &network, const SolverParameters &sp, int report_every);
+std::pair<Solution, std::vector<std::pair<int, int> > > ga_solver(const Network &network, const SolverParameters &sp, int report_every);
 
 void check_difference(const Flow &one, const Flow &two);
 
