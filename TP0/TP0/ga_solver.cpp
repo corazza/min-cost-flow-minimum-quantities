@@ -39,7 +39,7 @@ std::vector<vertex_key> find_random_augmenting_path(const Network &network, Flow
                 bool within_bounds = new_value <= network.v_capacities[visiting][neighbor];
                 within_bounds &= new_value >= 0;
 
-                if (is_active_vlb) {
+                if (is_active_vlb || !is_vlb) {
                     within_bounds &= (new_value >= minimum_quantity) || ignore_active_vlbs;
                 } else if (is_vlb) {
                     within_bounds &= new_value == 0 || ignore_inactive_vlbs;
@@ -660,6 +660,8 @@ void replace_in_generation(std::vector<Solution*> &generation, Solution *solutio
 void replace_first_worse_or_last(const Network &network, Solution *solution, std::vector<Solution*> &generation) {
     int i;
     for (i = 0; i < generation.size() - 1 && solution->cost > generation[i]->cost; ++i) {}
+    int x = rand() % generation.size();
+    i = max(x, i);
     replace_in_generation(generation, solution, i);
 }
 // TODO replace_similar?
@@ -685,15 +687,25 @@ std::pair<Solution, std::vector<std::pair<int, int> > > ga_solver(const Network 
     int flow_value = sp.flow_value;
     assert(generation_size % 2 == 0);
     std::vector<Solution*> current_generation = initial_generation(network, generation_size, sp.flow_value);
+    evaluate_generation(network, current_generation);
+    std::sort(current_generation.begin(), current_generation.end(), compare); // TODO FIXME replace with assertion that it's sorted
     std::cout << "generated initial generation..." << std::endl;
     Solution best_solution = current_generation[0]->make_copy();
+    int last_improvement_step = 0;
+    int largest_improvement_change = 0;
 
     for (int i = 0; i < num_steps; ++i) {
-        evaluate_generation(network, current_generation);
         std::sort(current_generation.begin(), current_generation.end(), compare); // TODO FIXME replace with assertion that it's sorted
         if (current_generation[0]->cost <= best_solution.cost || best_solution.cost == -1) {
             best_solution = current_generation[0]->make_copy();
-        }        
+            last_improvement_step = i;
+        }
+        int improvement_change = i - last_improvement_step;
+        largest_improvement_change = max(largest_improvement_change, improvement_change);
+        if (improvement_change > sp.improvements_stop) {
+            std::cout << "no improvements after " << improvement_change << " steps, stopping" << std::endl;
+            break;
+        }
         if (report_every > 0) {
             if (i % report_every == 0) {
                 std::cout << "step " << i << "/" << num_steps << ", best cost: " << best_solution.cost << ", best in generation: " << current_generation[0]->cost << std::endl;

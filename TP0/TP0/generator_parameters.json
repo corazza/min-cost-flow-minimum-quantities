@@ -1,12 +1,12 @@
 {
-    "alpha_1": 4,
-    "alpha_3": 10,
-    "alpha_2": 5,
-    "alpha_4": 10,
-    "cost_max": 20,
-    "flow_value": 30,
-    "inclusion_p": 0.3,
-    "max_span_q": 25,
     "n_nodes": 50,
-    "vlb_p": 0.2
+    "max_span_q": 25,
+    "inclusion_p": 0.3,
+    "vlb_p": 0.2,
+    "cost_max": 20,
+    "alpha_1": 4,
+    "alpha_2": 5,
+    "alpha_3": 10,
+    "alpha_4": 10,
+    "flow_value": 30
 }

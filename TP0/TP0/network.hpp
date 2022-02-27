@@ -30,7 +30,6 @@ struct Network {
     std::unordered_map<edge_key, int> minimum_quantities;  // lower bound of edge_key
     std::set<edge_key> vlbs;  // true iff edge_key has a variable lower bound
 
-
     std::vector<std::vector<int> > v_costs;
     std::vector<std::vector<int> > v_capacities;          // upper bound of edge key
     std::vector<std::vector<int> > v_minimum_quantities;  // lower bound of edge_key
