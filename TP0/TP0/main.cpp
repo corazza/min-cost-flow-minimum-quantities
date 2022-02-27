@@ -56,6 +56,12 @@ int main() {
     Flow flow(0, graf.sink, graf.n_nodes, graf.max_span_q);
 
     double vrijeme_cplex = rjesenje_cplex(&graf, p.flow_value, &flow);
+    if (vrijeme_cplex < 0) {
+        std::ofstream o_steps("results.json");
+        o_steps << "[]" << std::endl;
+        o_steps.close();
+        return 0;
+    }
 
     std::set<edge_key> variable_bounds = graf.detect_wannabe_active_vlbs(flow);
 
@@ -81,7 +87,7 @@ int main() {
     std::cout << "CPLEX solution: " << vrijeme_cplex << std::endl;
     std::cout << "time taken to calculate: " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << "(s)" << std::endl;
 
-    Results results(best_solution, steps, vrijeme_cplex, sp, p);
+    Results results(graf, best_solution, steps, vrijeme_cplex, sp, p);
 
     json j_results = results;
     std::ofstream o_steps("results.json");

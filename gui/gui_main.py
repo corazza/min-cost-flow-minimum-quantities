@@ -168,6 +168,7 @@ class App(tk.Tk):
             "num_perturbations": int(self.num_perturbations_entry.get()),
             "num_steps": int(self.num_steps_entry.get()),
             "flow_value": int(self.flow_value_entry.get()),
+            "improvements_stop": 1000
         }
 
         json_output_generator = json.dumps(output_generator, indent = 4)

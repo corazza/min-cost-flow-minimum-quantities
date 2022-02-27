@@ -218,15 +218,9 @@ Flow fix_flow_value(const Network &network, const Flow &original, std::set<edge_
 // main function that generates a random admissible flow, can throw an exception
 Flow random_admissible_flow_throws(const Network &network, int flow_value, std::set<edge_key> active_vlbs) {
     Flow flow(network.source, network.sink, network.n_nodes, network.max_span_q);
-    // std::cout << "here 1, " << active_vlbs.size() << std::endl;
-    // flow.vectorize();
-    // std::cout << "here 2" << std::endl;
     flow = fix_active_vlbs(network, flow, active_vlbs);
-    // std::cout << "here 3" << std::endl;
     flow = fix_inactive_vlbs(network, flow, active_vlbs);
-    // std::cout << "here 4" << std::endl;
     flow = fix_flow_value(network, flow, active_vlbs, flow_value);
-    // std::cout << "here 5" << std::endl;
     assert(flow.respects_flow_conservation());
     assert(flow.flow_value() == flow_value);
     assert(network.respects_bounds(flow, false));
@@ -418,11 +412,12 @@ std::set<edge_key> joint_random_decom_vlbs(const Network &network, std::vector<F
     auto decom2_vlbs = decomp_vlbs(network, decom2);
     int num_vlbs_1 = decom1_vlbs.size();
     int num_vlbs_2 = decom1_vlbs.size();
-    int num_vlbs = (num_vlbs_1 + num_vlbs_2) / 2;
 
     for (auto edge : decom2_vlbs) {
         decom1_vlbs.insert(edge);
     }
+
+    int num_vlbs = rand() % (decom1_vlbs.size() + 1);
 
     std::set<edge_key> active_vlbs;
 
@@ -449,7 +444,7 @@ Flow compose_throws(std::vector<Flow> &decom1, std::vector<Flow> &decom2, std::s
     // tmp.vectorize();
 
     std::set<int> available1; // stores available indices into decom1
-    std::set<int> available2; // this avoids the need to resize decom1, decom2 in each step (set operations are O(1) in contrast to vector)
+    std::set<int> available2; // this avoids the need to resize decom1, decom2 in each step
 
     for (int i = 0; i < decomposition_size; ++i) { // in the beginning, all decomposition elements are available
         if (contains_only_active(network, decom1[i], active_vlbs)) {
@@ -659,7 +654,10 @@ void replace_in_generation(std::vector<Solution*> &generation, Solution *solutio
 
 void replace_first_worse_or_last(const Network &network, Solution *solution, std::vector<Solution*> &generation) {
     int i;
-    for (i = 0; i < generation.size() - 1 && solution->cost > generation[i]->cost; ++i) {}
+    for (i = 0; i < generation.size() && solution->cost > generation[i]->cost; ++i) {}
+    if (i == generation.size()) {
+        return;
+    }
     int x = rand() % generation.size();
     i = max(x, i);
     replace_in_generation(generation, solution, i);
@@ -696,7 +694,7 @@ std::pair<Solution, std::vector<std::pair<int, int> > > ga_solver(const Network 
 
     for (int i = 0; i < num_steps; ++i) {
         std::sort(current_generation.begin(), current_generation.end(), compare); // TODO FIXME replace with assertion that it's sorted
-        if (current_generation[0]->cost <= best_solution.cost || best_solution.cost == -1) {
+        if (current_generation[0]->cost < best_solution.cost || best_solution.cost == -1) {
             best_solution = current_generation[0]->make_copy();
             last_improvement_step = i;
         }
@@ -721,7 +719,10 @@ std::pair<Solution, std::vector<std::pair<int, int> > > ga_solver(const Network 
         Solution *child = new Solution(child_vlbs_flow.second, child_vlbs_flow.first);
         evaluate_solution(network, child);
         replace_first_worse_or_last(network, child, current_generation);
-        mutate_random(network, current_generation, sp.num_perturbations);
+        float x = (float) rand() / (float) RAND_MAX;
+        if (x < 0.5) {
+            mutate_random(network, current_generation, sp.num_perturbations);
+        }
     }
 
     return std::make_pair(best_solution, steps);
