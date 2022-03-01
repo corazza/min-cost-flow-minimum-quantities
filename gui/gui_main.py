@@ -21,111 +21,115 @@ class App(tk.Tk):
 
         # Main interface setup
         self.title('Network traversal')
-        self.geometry('800x1000')
+        self.geometry('1000x550')
         ############################
 
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+        self.columnconfigure(2, weight=1)
+
         # Window label
-        self.label = ttk.Label(self, text='Enter the required parameters\nand press Calculate to start the program', padding=20, font='Helvetica 18 bold', justify='center')
-        self.label.pack()
+        self.label = ttk.Label(self, text='Enter the required parameters\nand press Calculate to start the program', padding=20, font='Helvetica 12 bold', justify='center')
+        self.label.grid(column=1, row=0)
 
         # Input setup
         self.label = ttk.Label(self, text='Alpha 1', padding=2, font='Helvetica 8', justify='left')
-        self.label.pack()
+        self.label.grid(column=0, row=3)
         self.alpha_1_entry = tk.Entry(self)
         self.alpha_1_entry.insert(0, generator_parameters['alpha_1'])
-        self.alpha_1_entry.pack()
+        self.alpha_1_entry.grid(column=0, row=4)
 
         self.label = ttk.Label(self, text='Alpha 2', padding=2, font='Helvetica 8', justify='left')
-        self.label.pack()
+        self.label.grid(column=0, row=5)
         self.alpha_2_entry = tk.Entry(self)
         self.alpha_2_entry.insert(0, generator_parameters['alpha_2'])
-        self.alpha_2_entry.pack()
+        self.alpha_2_entry.grid(column=0, row=6)
 
         self.label = ttk.Label(self, text='Alpha 3', padding=2, font='Helvetica 8', justify='left')
-        self.label.pack()
+        self.label.grid(column=0, row=7)
         self.alpha_3_entry = tk.Entry(self)
         self.alpha_3_entry.insert(0, generator_parameters['alpha_3'])
-        self.alpha_3_entry.pack()
+        self.alpha_3_entry.grid(column=0, row=8)
 
         self.label = ttk.Label(self, text='Alpha 4', padding=2, font='Helvetica 8', justify='left')
-        self.label.pack()
+        self.label.grid(column=0, row=9)
         self.alpha_4_entry = tk.Entry(self)
         self.alpha_4_entry.insert(0, generator_parameters['alpha_4'])
-        self.alpha_4_entry.pack()
+        self.alpha_4_entry.grid(column=0, row=10)
 
         self.label = ttk.Label(self, text='Max entry', padding=2, font='Helvetica 8', justify='left')
-        self.label.pack()
+        self.label.grid(column=0, row=11)
         self.cost_max_entry = tk.Entry(self)
         self.cost_max_entry.insert(0, generator_parameters['cost_max'])
-        self.cost_max_entry.pack()
+        self.cost_max_entry.grid(column=0, row=12)
 
         self.label = ttk.Label(self, text='Flow value', padding=2, font='Helvetica 8', justify='left')
-        self.label.pack()
+        self.label.grid(column=0, row=13)
         self.flow_value_entry = tk.Entry(self)
         self.flow_value_entry.insert(0, generator_parameters['flow_value'])
-        self.flow_value_entry.pack()
+        self.flow_value_entry.grid(column=0, row=14)
 
         self.label = ttk.Label(self, text='Inclusion', padding=2, font='Helvetica 8', justify='left')
-        self.label.pack()
+        self.label.grid(column=0, row=15)
         self.inclusion_p_entry = tk.Entry(self)
         self.inclusion_p_entry.insert(0, generator_parameters['inclusion_p'])
-        self.inclusion_p_entry.pack()
+        self.inclusion_p_entry.grid(column=0, row=16)
 
         self.label = ttk.Label(self, text='Max span', padding=2, font='Helvetica 8', justify='left')
-        self.label.pack()
+        self.label.grid(column=1, row=3)
         self.max_span_q_entry = tk.Entry(self)
         self.max_span_q_entry.insert(0, generator_parameters['max_span_q'])
-        self.max_span_q_entry.pack()
+        self.max_span_q_entry.grid(column=1, row=4)
 
         self.label = ttk.Label(self, text='Number of nodes', padding=2, font='Helvetica 8', justify='left')
-        self.label.pack()
+        self.label.grid(column=1, row=5)
         self.n_nodes_entry = tk.Entry(self)
         self.n_nodes_entry.insert(0, generator_parameters['n_nodes'])
-        self.n_nodes_entry.pack()
+        self.n_nodes_entry.grid(column=1, row=6)
 
         self.label = ttk.Label(self, text='Vlb', padding=2, font='Helvetica 8', justify='left')
-        self.label.pack()
+        self.label.grid(column=1, row=7)
         self.vlb_p_entry = tk.Entry(self)
         self.vlb_p_entry.insert(0, generator_parameters['vlb_p'])
-        self.vlb_p_entry.pack()
+        self.vlb_p_entry.grid(column=1, row=8)
 
         self.label = ttk.Label(self, text='Best of', padding=2, font='Helvetica 8', justify='left')
-        self.label.pack()
+        self.label.grid(column=1, row=9)
         self.best_of_entry = tk.Entry(self)
         self.best_of_entry.insert(0, solver_parameters['best_of'])
-        self.best_of_entry.pack()
+        self.best_of_entry.grid(column=1, row=10)
 
         self.label = ttk.Label(self, text='Gen. size', padding=2, font='Helvetica 8', justify='left')
-        self.label.pack()
+        self.label.grid(column=1, row=11)
         self.generation_size_entry = tk.Entry(self)
         self.generation_size_entry.insert(0, solver_parameters['generation_size'])
-        self.generation_size_entry.pack()
+        self.generation_size_entry.grid(column=1, row=12)
 
         self.label = ttk.Label(self, text='No. pert.', padding=2, font='Helvetica 8', justify='left')
-        self.label.pack()
+        self.label.grid(column=1, row=13)
         self.num_perturbations_entry = tk.Entry(self)
         self.num_perturbations_entry.insert(0, solver_parameters['num_perturbations'])
-        self.num_perturbations_entry.pack()
+        self.num_perturbations_entry.grid(column=1, row=14)
 
         self.label = ttk.Label(self, text='No. steps', padding=2, font='Helvetica 8', justify='left')
-        self.label.pack()
+        self.label.grid(column=1, row=15)
         self.num_steps_entry = tk.Entry(self)
         self.num_steps_entry.insert(0, solver_parameters['num_steps'])
-        self.num_steps_entry.pack()
+        self.num_steps_entry.grid(column=1, row=16)
 
         # Calculate button
         self.button = ttk.Button(self, text='Calculate', padding=10)
         self.button['command'] = self.compile_cpp
-        self.button.pack(anchor='se')
+        self.button.grid(column=2, row=17)
 
         # Display button
         self.button = ttk.Button(self, text='Solution', padding=10)
         self.button['command'] = self.display_graph
-        self.button.pack(anchor='se')
+        self.button.grid(column=2, row=18)
 
         self.button = ttk.Button(self, text='Results', padding=10)
         self.button['command'] = self.display_results
-        self.button.pack(anchor='se')
+        self.button.grid(column=2, row=19)
 
     def compile_cpp(self):
         self.output_parameters()
@@ -168,7 +172,7 @@ class App(tk.Tk):
             "num_perturbations": int(self.num_perturbations_entry.get()),
             "num_steps": int(self.num_steps_entry.get()),
             "flow_value": int(self.flow_value_entry.get()),
-            "improvements_stop": 1000
+            "improvements_stop": 2000
         }
 
         json_output_generator = json.dumps(output_generator, indent = 4)
