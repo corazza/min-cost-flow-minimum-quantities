@@ -20,7 +20,7 @@ class App(tk.Tk):
         f.close()
 
         # Main interface setup
-        self.title('Network traversal')
+        self.title('MCNF-VLB')
         self.geometry('1000x550')
         ############################
 
