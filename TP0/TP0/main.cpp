@@ -57,7 +57,6 @@ int main() {
 
     double vrijeme_cplex = rjesenje_cplex(&graf, p.flow_value, &flow);
     if (vrijeme_cplex < 0) {
-        std::cout << "CPLEX nije uspio pronaci rjesenje: probajte ponovno ili s drugim parametrima!" << std::endl;
         std::ofstream o_steps("results.json");
         o_steps << "[]" << std::endl;
         o_steps.close();

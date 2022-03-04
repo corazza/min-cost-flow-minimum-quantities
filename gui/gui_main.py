@@ -138,6 +138,12 @@ class App(tk.Tk):
         os.chdir(path + '\\TP0\\TP0')
         os.system(path + '\\TP0\\x64\\Release\\TP0.exe')
         os.chdir(path)
+        results_path = os.getcwd() + '\\TP0\\TP0\\results.json'
+        with open(results_path) as f:
+            data = f.read()
+            data = json.loads(data)
+            if len(data) == 0:
+                tk.messagebox.showwarning(title='Warning', message='CPLEX nije nasao rjesenje, probajte opet')
 
     def display_graph(self):
         path = os.getcwd()
