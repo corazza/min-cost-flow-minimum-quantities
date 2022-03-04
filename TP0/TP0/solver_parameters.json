@@ -1,8 +1,8 @@
 {
     "best_of": 3,
-    "flow_value": 30,
     "generation_size": 100,
     "num_perturbations": 2,
     "num_steps": 10000,
-    "improvements_stop": 2000
+    "flow_value": 20,
+    "improvements_stop": 1000
 }
