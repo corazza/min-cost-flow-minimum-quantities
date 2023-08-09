@@ -1,5 +1,11 @@
 # Min Cost Network Flow with Minimum Quantities
 
+![/figures/flow.png](/figures/flow.png)
+
+An evolutionary algorithm for solving the minimum cost network flow with minimum quantities problem.
+
+![/figures/final_results_1.png](/figures/final_results_1.png)
+
 ## Visualization
 
 (Suggestion: install miniconda)
